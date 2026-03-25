@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #FF6200;
+  --primary-light: #FF8C3A;
+  --primary-dark: #E05500;
+  --gold: #FFA500;
+  --yellow: #FFD700;
+  --bg: #f5f5f5;
+  --text: #1a1a1a;
+  --text2: #555;
+  --text3: #888;
+  --border: #e8e8e8;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+.pdf-mode * {
+  background: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: none !important;
+  border-color: #ddd !important;
+}

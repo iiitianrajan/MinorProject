@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { motion } from "framer-motion";
+import { useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import ProtectedRoute from "./contexts/protectRoute";
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -37,6 +40,54 @@ import MatchResult from "./pages/MatchResult";
 import LoveCalculator from "./pages/LoveCalculator";
 import MoonSign from "./pages/MoonSign";
 import AstrologerDetails from "./pages/AstrologerDetails";
+import CallScreen from "./pages/CallScreen";
+import AstrologyGuide from "./pages/AstrologyGuide";
+import AstrologerList from "./pages/AstrologerList";
+import ServiceDetail from "./pages/ServiceDetail";
+
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Home />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/astrologer/:id" element={<AstrologerDetails />} />
+
+        <Route path="/call" element={<Call />} />
+        <Route path="/astromall" element={<Astromall />} />
+        <Route path="/pooja" element={<Pooja />} />
+        <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/blog/love" element={<LoveBlogs />} />
+        <Route path="/blog/career" element={<CareerBlogs />} />
+        <Route path="/blog/:id" element={<BlogDetail />} />
+        <Route path="/callscreen" element={<CallScreen/>} />
+        <Route path="/astrology-guide" element={<AstrologyGuide />} />
+
+
+        <Route path="/kundli" element={<ProtectedRoute><Kundli /></ProtectedRoute>} />
+        <Route path="/kundli-result" element={<ProtectedRoute><KundliResult /></ProtectedRoute>} />
+        <Route path="/kundli-matching" element={<ProtectedRoute><KundliMatch /></ProtectedRoute>} />
+        <Route path="/match-result" element={<ProtectedRoute><MatchResult /></ProtectedRoute>} />
+        <Route path="/love-calculator" element={<ProtectedRoute><LoveCalculator /></ProtectedRoute>} />
+        <Route path="/moon-sign" element={<ProtectedRoute><MoonSign /></ProtectedRoute>} />
+        <Route path="/horoscope/daily" element={<ProtectedRoute><HoroscopeDaily /></ProtectedRoute>} />
+        <Route path="/horoscope/weekly" element={<ProtectedRoute><HoroscopeWeekly /></ProtectedRoute>} />
+        <Route path="/astrologerList" element={<ProtectedRoute><AstrologerList/></ProtectedRoute>} />
+        <Route path="/service/:id" element={<ProtectedRoute><ServiceDetail/></ProtectedRoute>} />
+        <Route path="/horoscope/:type/:sign" element={<ProtectedRoute><HoroscopeResult /></ProtectedRoute>} />
+        
+
+        <Route path="*" element={<GenericPage />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
 
 
 function App() {
@@ -83,37 +134,10 @@ function App() {
 
                 <main className="flex-grow">
                   <ScrollToTop />
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/chat" element={<Chat />} />
-                    <Route path="/astrologer/:id" element={<AstrologerDetails/>} />
-
-                    <Route path="/call" element={<Call />} />
-                    <Route path="/astromall" element={<Astromall />} />
-                    <Route path="/pooja" element={<Pooja />} />
-                    <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute> } />
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Contact/>} />
-                    <Route path="/blog/love" element={<LoveBlogs/>} />
-                    <Route path="/blog/career" element={<CareerBlogs/>} />
-                    <Route path="/blog/:id" element={<BlogDetail/>} />
-                    <Route path="/kundli" element={<ProtectedRoute><Kundli /></ProtectedRoute> } />
-                    <Route path="/kundli-result" element={<ProtectedRoute><KundliResult/></ProtectedRoute> } />
-                    <Route path="/kundli-matching" element={<ProtectedRoute><KundliMatch/></ProtectedRoute> } />
-                    <Route path="/match-result" element={<ProtectedRoute><MatchResult/></ProtectedRoute> } />
-                    <Route path="/love-calculator" element={<ProtectedRoute><LoveCalculator/></ProtectedRoute> } />
-                    <Route path="/moon-sign" element={<ProtectedRoute><MoonSign/></ProtectedRoute> } />
-                    <Route path="/horoscope/daily" element={<ProtectedRoute><HoroscopeDaily/></ProtectedRoute> } />
-                    <Route path="/horoscope/weekly" element={<ProtectedRoute><HoroscopeWeekly/></ProtectedRoute> } />
-                    <Route path="/horoscope/:type/:sign" element={<ProtectedRoute><HoroscopeResult/></ProtectedRoute> } />
-
-                    {/* <Route path="/profile" element={<ProfileModal />} /> */}
-
-                    {/* Fallback */}
-                    <Route path="*" element={<GenericPage />} />
-                  </Routes>
+                  <main className="flex-grow">
+  <ScrollToTop />
+  <AnimatedRoutes />
+</main>
                 </main>
 
                 {/* 🔥 GLOBAL MODAL */}

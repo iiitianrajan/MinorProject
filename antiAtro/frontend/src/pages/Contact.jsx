@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import { Mail, User, MessageSquare } from "lucide-react";
 
 const Contact = () => {
   const [form, setForm] = useState({
@@ -7,6 +9,7 @@ const Contact = () => {
     email: "",
     message: ""
   });
+
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -25,16 +28,13 @@ const Contact = () => {
     try {
       const res = await fetch("http://localhost:5001/api/contact", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)
       });
 
       if (!res.ok) throw new Error("Failed");
 
       toast.success("Message sent successfully 🚀");
-
       setForm({ name: "", email: "", message: "" });
 
     } catch (err) {
@@ -45,44 +45,88 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white flex items-center justify-center p-6">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-lg space-y-4"
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white flex items-center justify-center px-6 py-10">
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid md:grid-cols-2 bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl overflow-hidden max-w-5xl w-full border border-gray-100"
       >
-        <h1 className="text-2xl font-bold text-center">Contact Us</h1>
 
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Your Name"
-          className="w-full border p-3 rounded-lg"
-        />
+        {/* 🔥 LEFT SIDE (INFO PANEL) */}
+        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white p-10 flex flex-col justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-4">Let’s Talk 👋</h2>
+            <p className="text-sm opacity-90">
+              Have questions or need guidance? Our team is here to help you anytime.
+            </p>
+          </div>
 
-        <input
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="Your Email"
-          className="w-full border p-3 rounded-lg"
-        />
+          <div className="space-y-4 mt-8 text-sm">
+            <div>📧 support@astro.com</div>
+            <div>📞 +91 98765 43210</div>
+            <div>📍 India</div>
+          </div>
 
-        <textarea
-          name="message"
-          value={form.message}
-          onChange={handleChange}
-          placeholder="Your Message"
-          className="w-full border p-3 rounded-lg h-32"
-        />
+          <div className="text-xs opacity-70 mt-10">
+            We usually reply within 24 hours.
+          </div>
+        </div>
 
-        <button
-          disabled={loading}
-          className="w-full bg-black text-white py-3 rounded-lg"
-        >
-          {loading ? "Sending..." : "Send Message"}
-        </button>
-      </form>
+        {/* 🔥 RIGHT SIDE (FORM) */}
+        <form onSubmit={handleSubmit} className="p-8 space-y-5">
+
+          <h1 className="text-2xl font-bold text-gray-800">Contact Us</h1>
+
+          {/* NAME */}
+          <div className="relative">
+            <User size={18} className="absolute left-3 top-3 text-gray-400" />
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="Your Name"
+              className="w-full pl-10 p-3 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+
+          {/* EMAIL */}
+          <div className="relative">
+            <Mail size={18} className="absolute left-3 top-3 text-gray-400" />
+            <input
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Your Email"
+              className="w-full pl-10 p-3 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+
+          {/* MESSAGE */}
+          <div className="relative">
+            <MessageSquare size={18} className="absolute left-3 top-3 text-gray-400" />
+            <textarea
+              name="message"
+              value={form.message}
+              onChange={handleChange}
+              placeholder="Your Message"
+              className="w-full pl-10 p-3 border rounded-lg h-32 outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+          </div>
+
+          {/* BUTTON */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-lg font-bold shadow-lg"
+          >
+            {loading ? "Sending..." : "Send Message"}
+          </motion.button>
+
+        </form>
+      </motion.div>
+
     </div>
   );
 };

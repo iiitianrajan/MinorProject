@@ -41,6 +41,7 @@ const productRoutes = require('./routes/productRoutes.js')
 const contactRoutes = require('./routes/contactRoutes.js')
 const astrologyRoutes = require('./routes/astrologyRoutes')
 const aiRoutes = require('./routes/ai');
+const reviewRoutes = require("./routes/reviewRoutes");
 
 
 app.use('/api/auth', authRoutes);
@@ -49,6 +50,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/astrologer', astrologyRoutes); 
 app.use('/api/product', productRoutes); 
 app.use('/api/contact',contactRoutes);
+app.use('/api/review',reviewRoutes);
 
 
 app.get('/api/health', (req, res) => {

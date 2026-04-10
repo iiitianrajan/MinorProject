@@ -57,8 +57,8 @@ app.use('/api/puja',pujaRoutes);
 app.use('/api/payment',paymentRoutes)
 
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
+app.get("/", (req, res) => {
+  res.send("🚀 Backend is running successfully");
 });
 
 

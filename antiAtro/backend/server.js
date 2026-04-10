@@ -42,6 +42,8 @@ const contactRoutes = require('./routes/contactRoutes.js')
 const astrologyRoutes = require('./routes/astrologyRoutes')
 const aiRoutes = require('./routes/ai');
 const reviewRoutes = require("./routes/reviewRoutes");
+const pujaRoutes = require('./routes/pujaRoutes.js')
+const paymentRoutes = require('./routes/paymentRoutes.js')
 
 
 app.use('/api/auth', authRoutes);
@@ -51,11 +53,14 @@ app.use('/api/astrologer', astrologyRoutes);
 app.use('/api/product', productRoutes); 
 app.use('/api/contact',contactRoutes);
 app.use('/api/review',reviewRoutes);
+app.use('/api/puja',pujaRoutes);
+app.use('/api/payment',paymentRoutes)
 
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
 
 // Socket
 const io = initSocketIO(server);

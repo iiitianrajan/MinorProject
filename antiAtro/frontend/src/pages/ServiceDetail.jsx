@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, Clock, MapPin, Globe, Tag, CheckCircle, ChevronDown, X, Phone, MessageCircle, Star, Users, Award, Zap } from "lucide-react";
 
 /* ─── DATA ─── */
 const servicesData = {
@@ -181,11 +182,21 @@ const servicesData = {
   },
 };
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.07, duration: 0.45, ease: "easeOut" } }),
-};
 const TABS = ["benefits", "procedure", "includes", "faqs"];
+
+const tabLabels = {
+  benefits: "Benefits",
+  procedure: "Procedure",
+  includes: "What's Included",
+  faqs: "FAQs",
+};
+
+const stats = [
+  { icon: Award, value: "2,000+", label: "Pujas Done" },
+  { icon: Star, value: "4.9★", label: "Rating" },
+  { icon: Users, value: "500+", label: "Families" },
+  { icon: Zap, value: "15+", label: "Years Exp." },
+];
 
 export default function ServiceDetail() {
   const { id } = useParams();
@@ -198,254 +209,669 @@ export default function ServiceDetail() {
   useEffect(() => { window.scrollTo(0, 0); setImgIdx(0); }, [id]);
 
   if (!service) return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "sans-serif" }}>
-      Service not found. <Link to="/services" style={{ color: "#6b4eff", marginLeft: 8 }}>Go back</Link>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}
+      className="flex-col gap-4">
+      <p style={{ color: "var(--text-muted)" }}>Service not found.</p>
+      <Link to="/services" className="btn-primary text-sm">← Back to Services</Link>
     </div>
   );
 
   const imgs = service.images;
 
   return (
-    <div style={{ background: "#fff", minHeight: "100vh", fontFamily: "'Segoe UI','Helvetica Neue',Arial,sans-serif", color: "#1a1a2e" }}>
+    <div style={{ background: "var(--bg-soft)", minHeight: "100vh", overflowX: "hidden" }}>
 
-      {/* ── NAV ── */}
-      <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.97)", backdropFilter: "blur(12px)", borderBottom: "1px solid #ede8fb", padding: "0 32px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link to="/services" style={{ display: "flex", alignItems: "center", gap: 6, textDecoration: "none", color: "#6b4eff", fontSize: 14, fontWeight: 600 }}>
-          ← All Services
+      {/* ── STICKY NAV ── */}
+      <div
+        className="glass"
+        style={{
+          position: "sticky", top: 0, zIndex: 100,
+          borderRadius: 0,
+          borderBottom: "1px solid var(--border-soft)",
+          padding: "0 2rem",
+          height: 60,
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}
+      >
+        <Link
+          to="/services"
+          className="flex items-center gap-2 text-sm font-semibold transition-colors duration-200"
+          style={{ color: "var(--text-muted)", textDecoration: "none" }}
+        >
+          <ArrowLeft size={15} style={{ color: "var(--primary-light)" }} />
+          All Services
         </Link>
-        <span style={{ fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase", background: "linear-gradient(135deg,#6b4eff,#a855f7)", color: "#fff", padding: "4px 14px", borderRadius: 20, fontWeight: 700 }}>
+
+        <motion.span
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-widest"
+          style={{
+            background: "var(--accent-bg)",
+            border: "1px solid var(--accent-border)",
+            color: "var(--primary-light)",
+          }}
+        >
           {service.badge}
-        </span>
-        <button onClick={() => setShowBooking(true)} style={{ background: "linear-gradient(135deg,#6b4eff,#a855f7)", color: "#fff", border: "none", padding: "9px 24px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+        </motion.span>
+
+        <motion.button
+          whileHover={{ scale: 1.04, y: -1 }}
+          whileTap={{ scale: 0.96 }}
+          onClick={() => setShowBooking(true)}
+          className="btn-primary text-sm cursor-pointer"
+          style={{ border: "none" }}
+        >
           Book Now
-        </button>
+        </motion.button>
       </div>
 
       {/* ── HERO ── */}
-      <div style={{ position: "relative", height: "clamp(300px,52vw,540px)", overflow: "hidden" }}>
+      <div style={{ position: "relative", height: "clamp(280px, 48vw, 520px)", overflow: "hidden" }}>
         <AnimatePresence mode="wait">
-          <motion.img key={imgIdx} src={imgs[imgIdx]} alt={service.title}
-            initial={{ opacity: 0, scale: 1.04 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5 }}
+          <motion.img
+            key={imgIdx}
+            src={imgs[imgIdx]}
+            alt={service.title}
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             onError={e => { e.target.src = imgs[0]; }}
           />
         </AnimatePresence>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,5,40,0.75) 0%, rgba(10,5,40,0.1) 55%, transparent 80%)" }} />
+
+        {/* Gradient overlay */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(68,17,17,0.82) 0%, rgba(26,12,6,0.2) 55%, transparent 80%)"
+        }} />
+
+        {/* Ambient glow */}
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute", top: "10%", right: "8%",
+            width: "35%", height: "60%", borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(255,98,0,0.18) 0%, transparent 70%)",
+            filter: "blur(50px)", pointerEvents: "none",
+          }}
+        />
 
         {/* Title overlay */}
-        <div style={{ position: "absolute", bottom: 40, left: 48, right: 220 }}>
-          <span style={{ fontSize: 11, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(255,255,255,0.65)", marginBottom: 8, display: "block" }}>{service.categoryLabel}</span>
-          <h1 style={{ fontSize: "clamp(28px,5vw,54px)", fontWeight: 800, color: "#fff", lineHeight: 1.1, textShadow: "0 2px 24px rgba(0,0,0,0.4)", margin: 0 }}>{service.title}</h1>
+        <div style={{ position: "absolute", bottom: 48, left: "clamp(1rem, 4vw, 3rem)", right: "clamp(1rem, 28vw, 260px)" }}>
+          <motion.span
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="text-xs font-semibold uppercase tracking-widest block mb-2"
+            style={{ color: "rgba(255,200,150,0.8)" }}
+          >
+            {service.categoryLabel}
+          </motion.span>
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="font-bold leading-tight"
+            style={{
+              fontSize: "clamp(1.8rem, 4.5vw, 3.2rem)",
+              color: "#fff",
+              fontFamily: "Poppins, sans-serif",
+              letterSpacing: "-0.03em",
+              textShadow: "0 2px 24px rgba(0,0,0,0.35)",
+              margin: 0,
+            }}
+          >
+            {service.title}
+          </motion.h1>
         </div>
 
         {/* Price badge */}
-        <div style={{ position: "absolute", bottom: 44, right: 36, background: "linear-gradient(135deg,#6b4eff,#a855f7)", color: "#fff", padding: "12px 22px", borderRadius: 14, textAlign: "center", boxShadow: "0 8px 32px rgba(107,78,255,0.4)" }}>
-          <span style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", opacity: 0.8, display: "block", marginBottom: 3 }}>Starting at</span>
-          <span style={{ fontSize: 22, fontWeight: 800, display: "block" }}>{service.price}</span>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            position: "absolute", bottom: 52, right: "clamp(1rem, 3vw, 2.5rem)",
+            background: "var(--gradient-primary)",
+            borderRadius: "1.5rem",
+            padding: "14px 24px",
+            textAlign: "center",
+            boxShadow: "0 12px 40px rgba(165,61,0,0.4)",
+          }}
+        >
+          <span className="text-xs font-semibold uppercase tracking-wider block mb-1" style={{ color: "rgba(255,255,255,0.75)" }}>
+            Starting at
+          </span>
+          <span className="font-bold block" style={{ fontSize: "1.4rem", color: "#fff" }}>
+            {service.price}
+          </span>
+        </motion.div>
 
-        {/* Dots */}
+        {/* Image dots */}
         <div style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 6 }}>
           {imgs.map((_, i) => (
-            <button key={i} onClick={() => setImgIdx(i)}
-              style={{ width: i === imgIdx ? 24 : 8, height: 8, borderRadius: 4, background: i === imgIdx ? "#fff" : "rgba(255,255,255,0.4)", border: "none", cursor: "pointer", transition: "all 0.3s", padding: 0 }}
+            <button
+              key={i}
+              onClick={() => setImgIdx(i)}
+              style={{
+                width: i === imgIdx ? 24 : 8, height: 8,
+                borderRadius: 4,
+                background: i === imgIdx ? "#fff" : "rgba(255,255,255,0.35)",
+                border: "none", cursor: "pointer",
+                transition: "all 0.3s", padding: 0,
+              }}
             />
           ))}
         </div>
       </div>
 
       {/* ── THUMBNAIL STRIP ── */}
-      <div style={{ display: "flex", gap: 8, padding: "12px 32px", background: "#f8f4ff", borderBottom: "1px solid #ede8fb", overflowX: "auto" }}>
+      <div
+        style={{
+          display: "flex", gap: 8,
+          padding: "12px clamp(1rem,4vw,2rem)",
+          background: "var(--bg-elevated)",
+          borderBottom: "1px solid var(--border-soft)",
+          overflowX: "auto",
+        }}
+      >
         {imgs.map((img, i) => (
-          <button key={i} onClick={() => setImgIdx(i)}
-            style={{ flexShrink: 0, width: 88, height: 60, overflow: "hidden", border: i === imgIdx ? "2.5px solid #6b4eff" : "2.5px solid transparent", borderRadius: 8, padding: 0, cursor: "pointer", background: "none", transition: "border-color 0.2s" }}>
+          <motion.button
+            key={i}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.96 }}
+            onClick={() => setImgIdx(i)}
+            style={{
+              flexShrink: 0, width: 88, height: 60, overflow: "hidden",
+              border: i === imgIdx ? "2.5px solid var(--primary-light)" : "2.5px solid transparent",
+              borderRadius: 10, padding: 0, cursor: "pointer",
+              background: "none", transition: "border-color 0.2s",
+            }}
+          >
             <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-          </button>
+          </motion.button>
         ))}
       </div>
 
       {/* ── STATS BAR ── */}
-      <div style={{ background: "linear-gradient(135deg,#6b4eff 0%,#a855f7 100%)", padding: "22px 32px", display: "flex", justifyContent: "center", gap: 60, flexWrap: "wrap" }}>
-        {[["2,000+", "Pujas Done"], ["15+", "Years Exp."], ["500+", "Families"], ["4.9★", "Rating"]].map(([n, l]) => (
-          <div key={l} style={{ textAlign: "center" }}>
-            <span style={{ fontSize: 26, fontWeight: 800, color: "#fff", display: "block", lineHeight: 1 }}>{n}</span>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginTop: 4 }}>{l}</span>
-          </div>
+      <div
+        style={{
+          background: "var(--gradient-primary)",
+          padding: "20px clamp(1rem, 4vw, 2rem)",
+          display: "flex", justifyContent: "center",
+          gap: "clamp(1.5rem, 5vw, 4rem)",
+          flexWrap: "wrap",
+        }}
+      >
+        {stats.map(({ icon: Icon, value, label }, i) => (
+          <motion.div
+            key={label}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08 }}
+            className="flex items-center gap-3"
+          >
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "rgba(255,255,255,0.18)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Icon size={16} color="rgba(255,255,255,0.9)" />
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <span style={{ fontSize: "1.1rem", fontWeight: 800, color: "#fff", display: "block", lineHeight: 1 }}>{value}</span>
+              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", letterSpacing: "0.1em", textTransform: "uppercase", display: "block", marginTop: 3 }}>{label}</span>
+            </div>
+          </motion.div>
         ))}
       </div>
 
       {/* ── MAIN GRID ── */}
-      <div style={{ maxWidth: 1140, margin: "0 auto", padding: "44px 32px 80px", display: "grid", gridTemplateColumns: "1fr 360px", gap: 52, alignItems: "start" }}>
+      <div
+        className="max-w-7xl mx-auto"
+        style={{ padding: "3rem clamp(1rem,4vw,2rem) 5rem", display: "grid", gridTemplateColumns: "1fr", gap: "2.5rem" }}
+      >
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: "2.5rem" }}
+          className="lg:grid-cols-[1fr_360px]"
+        >
 
-        {/* LEFT */}
-        <div>
-          {/* Pills */}
-          <motion.div custom={0} variants={fadeUp} initial="hidden" animate="visible"
-            style={{ display: "flex", gap: 10, marginBottom: 28, flexWrap: "wrap" }}>
-            {[["⏱", service.duration], ["📍", "At Your Home"], ["🌐", "Hindi & English"], ["✨", service.categoryLabel]].map(([icon, label]) => (
-              <span key={label} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#f8f4ff", border: "1.5px solid #ddd6fe", borderRadius: 24, padding: "6px 16px", fontSize: 13, color: "#6b4eff", fontWeight: 600 }}>
-                {icon} {label}
-              </span>
-            ))}
+          {/* ── LEFT: Article Body ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Pills */}
+            <div className="flex flex-wrap gap-2 mb-8">
+              {[
+                { icon: Clock, label: service.duration },
+                { icon: MapPin, label: "At Your Home" },
+                { icon: Globe, label: "Hindi & English" },
+                { icon: Tag, label: service.categoryLabel },
+              ].map(({ icon: Icon, label }) => (
+                <motion.span
+                  key={label}
+                  whileHover={{ scale: 1.04, y: -2 }}
+                  className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold cursor-default"
+                  style={{
+                    background: "var(--accent-bg)",
+                    border: "1px solid var(--accent-border)",
+                    color: "var(--primary-light)",
+                  }}
+                >
+                  <Icon size={12} /> {label}
+                </motion.span>
+              ))}
+            </div>
+
+            {/* Lede */}
+            <p
+              className="mb-6 leading-relaxed"
+              style={{
+                fontSize: "1.05rem",
+                color: "var(--text)",
+                borderLeft: "3px solid var(--primary)",
+                paddingLeft: "1.25rem",
+              }}
+            >
+              {service.description}
+            </p>
+
+            <p className="mb-10 leading-relaxed" style={{ fontSize: "0.95rem", color: "var(--text-muted)" }}>
+              {service.longDescription}
+            </p>
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "var(--border-soft)", marginBottom: "2rem" }} />
+
+            {/* ── TABS ── */}
+            <div
+              className="flex overflow-x-auto"
+              style={{ borderBottom: "1px solid var(--border-soft)", marginBottom: "1.75rem", gap: 4 }}
+            >
+              {TABS.map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className="relative text-xs font-semibold uppercase tracking-widest cursor-pointer transition-all duration-200 whitespace-nowrap"
+                  style={{
+                    background: "none", border: "none",
+                    padding: "12px 18px",
+                    color: tab === activeTab ? "var(--primary-light)" : "var(--text-soft)",
+                    fontFamily: "inherit",
+                    paddingBottom: 13,
+                  }}
+                >
+                  {tabLabels[tab]}
+                  {tab === activeTab && (
+                    <motion.div
+                      layoutId="tab-underline"
+                      style={{
+                        position: "absolute", bottom: -1, left: 0, right: 0, height: 2,
+                        background: "var(--gradient-primary)",
+                        borderRadius: 2,
+                      }}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <AnimatePresence mode="wait">
+
+              {/* Benefits */}
+              {activeTab === "benefits" && (
+                <motion.div key="ben" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="flex flex-col gap-3">
+                  {service.benefits.map((b, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.08 }}
+                      className="card flex items-start gap-4"
+                      style={{ padding: "1rem 1.25rem" }}
+                    >
+                      <div style={{
+                        width: 8, height: 8, borderRadius: "50%",
+                        background: "var(--gradient-primary)",
+                        flexShrink: 0, marginTop: 6,
+                      }} />
+                      <span style={{ fontSize: "0.93rem", color: "var(--text-muted)", lineHeight: 1.65 }}>{b}</span>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+
+              {/* Procedure */}
+              {activeTab === "procedure" && (
+                <motion.div key="proc" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                  <motion.blockquote
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="card-soft px-6 py-5 rounded-2xl"
+                    style={{ borderLeft: "4px solid var(--primary)" }}
+                  >
+                    <p style={{ fontSize: "0.96rem", color: "var(--text-muted)", lineHeight: 1.85, margin: 0 }}>
+                      {service.procedure}
+                    </p>
+                  </motion.blockquote>
+                  {service.when && (
+                    <div className="card mt-4" style={{ padding: "1.25rem 1.5rem" }}>
+                      <span className="text-xs font-semibold uppercase tracking-widest block mb-2" style={{ color: "var(--primary-light)" }}>
+                        📅 Best Performed
+                      </span>
+                      <p style={{ fontSize: "0.93rem", color: "var(--text-muted)", lineHeight: 1.75, margin: 0 }}>{service.when}</p>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Includes */}
+              {activeTab === "includes" && (
+                <motion.div key="inc" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="flex flex-col gap-3">
+                  {service.includes.map((item, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.08 }}
+                      className="card flex items-center gap-4"
+                      style={{ padding: "1rem 1.25rem" }}
+                    >
+                      <div style={{
+                        width: 28, height: 28, borderRadius: 9,
+                        background: "var(--gradient-primary)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        flexShrink: 0,
+                      }}>
+                        <CheckCircle size={14} color="#fff" />
+                      </div>
+                      <span style={{ fontSize: "0.93rem", color: "var(--text-muted)" }}>{item}</span>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+
+              {/* FAQs */}
+              {activeTab === "faqs" && (
+                <motion.div key="faq" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  className="flex flex-col">
+                  {service.faqs.map((faq, i) => (
+                    <div
+                      key={i}
+                      style={{ borderBottom: "1px solid var(--border-soft)" }}
+                    >
+                      <button
+                        onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                        className="w-full flex justify-between items-center gap-4 cursor-pointer"
+                        style={{
+                          background: "none", border: "none",
+                          padding: "1.1rem 0",
+                          fontFamily: "inherit",
+                          fontSize: "0.96rem",
+                          fontWeight: 600,
+                          color: "var(--text-heading)",
+                          textAlign: "left",
+                        }}
+                      >
+                        <span>{faq.q}</span>
+                        <motion.div
+                          animate={{ rotate: openFaq === i ? 180 : 0 }}
+                          transition={{ duration: 0.25 }}
+                          style={{ flexShrink: 0 }}
+                        >
+                          <ChevronDown size={18} style={{ color: "var(--primary-light)" }} />
+                        </motion.div>
+                      </button>
+                      <AnimatePresence>
+                        {openFaq === i && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25 }}
+                            style={{ overflow: "hidden" }}
+                          >
+                            <p style={{ fontSize: "0.9rem", color: "var(--text-muted)", lineHeight: 1.8, paddingBottom: "1rem", margin: 0 }}>
+                              {faq.a}
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+
+            </AnimatePresence>
           </motion.div>
 
-          {/* Description */}
-          <motion.p custom={1} variants={fadeUp} initial="hidden" animate="visible"
-            style={{ fontSize: 18, color: "#334155", lineHeight: 1.8, marginBottom: 16, fontWeight: 400 }}>
-            {service.description}
-          </motion.p>
-          <motion.p custom={2} variants={fadeUp} initial="hidden" animate="visible"
-            style={{ fontSize: 16, color: "#64748b", lineHeight: 1.85, marginBottom: 36 }}>
-            {service.longDescription}
-          </motion.p>
+          {/* ── RIGHT: Sticky Sidebar ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            style={{ position: "sticky", top: 72, alignSelf: "start" }}
+          >
 
-          <div style={{ height: 1, background: "linear-gradient(90deg,#ede8fb,transparent)", marginBottom: 32 }} />
+            {/* Booking Card */}
+            <div
+              className="card mb-4 relative overflow-hidden"
+              style={{ boxShadow: "var(--shadow-md)" }}
+            >
+              {/* Subtle gradient top accent */}
+              <div style={{
+                position: "absolute", top: 0, left: 0, right: 0, height: 3,
+                background: "var(--gradient-primary)", borderRadius: "1.5rem 1.5rem 0 0",
+              }} />
 
-          {/* TABS */}
-          <div style={{ display: "flex", borderBottom: "2px solid #ede8fb", marginBottom: 28 }}>
-            {TABS.map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} style={{
-                background: "none", border: "none",
-                borderBottom: tab === activeTab ? "2.5px solid #6b4eff" : "2.5px solid transparent",
-                padding: "11px 22px", fontSize: 13, letterSpacing: "0.1em", textTransform: "uppercase",
-                color: tab === activeTab ? "#6b4eff" : "#94a3b8",
-                cursor: "pointer", fontFamily: "inherit",
-                fontWeight: tab === activeTab ? 700 : 500,
-                transition: "color 0.2s", marginBottom: -2,
-              }}>
-                {tab === "faqs" ? "FAQs" : tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </div>
+              <span className="text-xs font-semibold uppercase tracking-widest block mb-1 mt-1" style={{ color: "var(--primary-light)" }}>
+                Starting Price
+              </span>
+              <span className="font-bold block mb-5" style={{ fontSize: "2rem", color: "var(--text-heading)", lineHeight: 1 }}>
+                {service.price}
+              </span>
 
-          <AnimatePresence mode="wait">
-            {activeTab === "benefits" && (
-              <motion.div key="ben" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                {service.benefits.map((b, i) => (
-                  <motion.div key={i} custom={i} variants={fadeUp} initial="hidden" animate="visible"
-                    style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 18px", borderRadius: 12, background: "#f8f4ff", border: "1px solid #ede8fb", marginBottom: 10 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: "linear-gradient(135deg,#6b4eff,#a855f7)", flexShrink: 0, marginTop: 7 }} />
-                    <span style={{ fontSize: 15, color: "#334155", lineHeight: 1.6 }}>{b}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-            {activeTab === "procedure" && (
-              <motion.div key="proc" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <div style={{ background: "#f8f4ff", border: "1px solid #ede8fb", borderRadius: 14, padding: "28px" }}>
-                  <p style={{ fontSize: 16, color: "#334155", lineHeight: 1.85, margin: 0 }}>{service.procedure}</p>
+              <div style={{ height: 1, background: "var(--border-soft)", marginBottom: "1.25rem" }} />
+
+              {[
+                ["Duration", service.duration],
+                ["Type", service.categoryLabel],
+                ["Location", "At your home"],
+                ["Language", "Hindi / English"],
+              ].map(([l, v]) => (
+                <div key={l} className="flex justify-between items-center mb-3">
+                  <span className="text-xs" style={{ color: "var(--text-soft)" }}>{l}</span>
+                  <span className="text-xs font-semibold" style={{ color: "var(--text-heading)" }}>{v}</span>
                 </div>
-              </motion.div>
-            )}
-            {activeTab === "includes" && (
-              <motion.div key="inc" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                {service.includes.map((item, i) => (
-                  <motion.div key={i} custom={i} variants={fadeUp} initial="hidden" animate="visible"
-                    style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderRadius: 12, background: "#f8f4ff", border: "1px solid #ede8fb", marginBottom: 10 }}>
-                    <div style={{ width: 24, height: 24, borderRadius: 7, background: "linear-gradient(135deg,#6b4eff,#a855f7)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>✓</div>
-                    <span style={{ fontSize: 15, color: "#334155" }}>{item}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
-            {activeTab === "faqs" && (
-              <motion.div key="faq" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                {service.faqs.map((faq, i) => (
-                  <div key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                    <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                      style={{ width: "100%", background: "none", border: "none", padding: "17px 0", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", fontFamily: "inherit", fontSize: 16, color: "#1a1a2e", fontWeight: 600, textAlign: "left", gap: 12 }}>
-                      <span>{faq.q}</span>
-                      <span style={{ color: "#6b4eff", fontSize: 22, lineHeight: 1, transform: openFaq === i ? "rotate(45deg)" : "rotate(0deg)", transition: "transform 0.25s", flexShrink: 0 }}>+</span>
-                    </button>
-                    <AnimatePresence>
-                      {openFaq === i && (
-                        <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} style={{ overflow: "hidden" }}>
-                          <p style={{ fontSize: 15, color: "#64748b", lineHeight: 1.75, paddingBottom: 16, margin: 0 }}>{faq.a}</p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+              ))}
+
+              <div style={{ height: "1.25rem" }} />
+
+              <motion.button
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setShowBooking(true)}
+                className="btn-primary w-full text-sm font-semibold cursor-pointer mb-3"
+                style={{ border: "none" }}
+              >
+                🙏 Book This Puja
+              </motion.button>
+
+              <motion.a
+                whileHover={{ scale: 1.02, y: -1 }}
+                href="https://wa.me/919999999999"
+                className="flex items-center justify-center gap-2 w-full text-sm font-semibold rounded-full py-3 transition-all duration-300"
+                style={{
+                  border: "1.5px solid var(--accent-border)",
+                  background: "var(--accent-bg)",
+                  color: "var(--primary-light)",
+                  textDecoration: "none",
+                }}
+              >
+                <MessageCircle size={14} /> WhatsApp Us
+              </motion.a>
+            </div>
+
+            {/* When box */}
+            <div className="card-soft mb-4" style={{ borderLeft: "3px solid var(--primary)" }}>
+              <span className="text-xs font-semibold uppercase tracking-widest block mb-2" style={{ color: "var(--primary-light)" }}>
+                📅 Best Performed
+              </span>
+              <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", lineHeight: 1.75, margin: 0 }}>{service.when}</p>
+            </div>
+
+            {/* Trust signals */}
+            <div className="card" style={{ padding: "1rem 1.25rem" }}>
+              {[
+                ["✅", "Experienced Vedic Pandits"],
+                ["📦", "All Samagri Included"],
+                ["⏰", "Punctual & On Time"],
+                ["⭐", "500+ Happy Families"],
+              ].map(([icon, label]) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-3 py-2.5"
+                  style={{ borderBottom: "1px solid var(--border-soft)", fontSize: "0.85rem", color: "var(--text-muted)" }}
+                >
+                  <span>{icon}</span> {label}
+                </div>
+              ))}
+            </div>
+
+          </motion.div>
         </div>
-
-        {/* ── SIDEBAR ── */}
-        <motion.div custom={1} variants={fadeUp} initial="hidden" animate="visible" style={{ position: "sticky", top: 72 }}>
-
-          {/* Booking card */}
-          <div style={{ background: "#fff", border: "1.5px solid #ede8fb", borderRadius: 16, padding: "28px", boxShadow: "0 4px 32px rgba(107,78,255,0.09)" }}>
-            <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: "#a855f7", display: "block", marginBottom: 4, fontWeight: 700 }}>Starting Price</span>
-            <span style={{ fontSize: 34, fontWeight: 800, color: "#1a1a2e", display: "block", marginBottom: 20 }}>{service.price}</span>
-            <div style={{ height: 1, background: "#ede8fb", marginBottom: 20 }} />
-            {[["Duration", service.duration], ["Type", service.categoryLabel], ["Location", "At your home"], ["Language", "Hindi / English"]].map(([l, v]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, marginBottom: 12 }}>
-                <span style={{ color: "#94a3b8" }}>{l}</span>
-                <span style={{ color: "#1a1a2e", fontWeight: 600 }}>{v}</span>
-              </div>
-            ))}
-            <div style={{ height: 20 }} />
-            <button onClick={() => setShowBooking(true)}
-              style={{ width: "100%", background: "linear-gradient(135deg,#6b4eff,#a855f7)", color: "#fff", border: "none", padding: "14px", borderRadius: 10, fontFamily: "inherit", fontSize: 16, fontWeight: 700, cursor: "pointer", marginBottom: 10, letterSpacing: "0.02em" }}>
-              🙏 Book This Puja
-            </button>
-            <a href="https://wa.me/919999999999"
-              style={{ display: "block", width: "100%", textAlign: "center", border: "2px solid #6b4eff", color: "#6b4eff", padding: "12px", borderRadius: 10, fontFamily: "inherit", fontSize: 15, fontWeight: 700, textDecoration: "none", boxSizing: "border-box" }}>
-              💬 WhatsApp Us
-            </a>
-          </div>
-
-          {/* When box */}
-          <div style={{ background: "linear-gradient(135deg,#f8f4ff,#fdf4ff)", border: "1px solid #ddd6fe", borderRadius: 12, padding: "20px", marginTop: 14 }}>
-            <span style={{ fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: "#a855f7", fontWeight: 700, display: "block", marginBottom: 8 }}>📅 Best Performed</span>
-            <p style={{ fontSize: 14, color: "#475569", lineHeight: 1.7, margin: 0 }}>{service.when}</p>
-          </div>
-
-          {/* Trust signals */}
-          <div style={{ marginTop: 14 }}>
-            {[["✅", "Experienced Vedic Pandits"], ["📦", "All Samagri Included"], ["⏰", "Punctual & On Time"], ["⭐", "500+ Happy Families"]].map(([icon, label]) => (
-              <div key={label} style={{ fontSize: 13, color: "#64748b", padding: "10px 0", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", gap: 10 }}>
-                <span>{icon}</span> {label}
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </div>
 
       {/* ── BOOKING MODAL ── */}
       <AnimatePresence>
         {showBooking && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={() => setShowBooking(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(10,5,40,0.6)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-            <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}
+            style={{
+              position: "fixed", inset: 0,
+              background: "rgba(68,17,17,0.55)",
+              backdropFilter: "blur(8px)",
+              zIndex: 200,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "1.5rem",
+            }}
+          >
+            <motion.div
+              initial={{ y: 30, opacity: 0, scale: 0.96 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              transition={{ ease: [0.16, 1, 0.3, 1] }}
               onClick={e => e.stopPropagation()}
-              style={{ background: "#fff", maxWidth: 500, width: "100%", borderRadius: 20, padding: "40px", position: "relative", boxShadow: "0 20px 80px rgba(107,78,255,0.2)" }}>
-              <button onClick={() => setShowBooking(false)} style={{ position: "absolute", top: 16, right: 20, background: "none", border: "none", fontSize: 28, color: "#94a3b8", cursor: "pointer", lineHeight: 1 }}>×</button>
-              <span style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#6b4eff", marginBottom: 8, display: "block", fontWeight: 700 }}>Book Your Puja</span>
-              <h2 style={{ fontSize: 28, fontWeight: 800, color: "#1a1a2e", marginBottom: 24, marginTop: 0 }}>{service.title}</h2>
+              className="card relative w-full"
+              style={{
+                maxWidth: 480,
+                boxShadow: "var(--shadow-lg)",
+                padding: "2.5rem",
+              }}
+            >
+              {/* Top gradient bar */}
+              <div style={{
+                position: "absolute", top: 0, left: 0, right: 0, height: 3,
+                background: "var(--gradient-primary)", borderRadius: "1.5rem 1.5rem 0 0",
+              }} />
+
+              <button
+                onClick={() => setShowBooking(false)}
+                className="absolute top-4 right-4 flex items-center justify-center w-8 h-8 rounded-full cursor-pointer transition-all duration-200"
+                style={{ background: "var(--bg-soft)", border: "none", color: "var(--text-muted)" }}
+              >
+                <X size={16} />
+              </button>
+
+              <span className="text-xs font-semibold uppercase tracking-widest block mb-2" style={{ color: "var(--primary-light)" }}>
+                Book Your Puja
+              </span>
+              <h2
+                className="font-bold mb-6"
+                style={{ fontSize: "1.6rem", color: "var(--text-heading)", fontFamily: "Poppins, sans-serif", letterSpacing: "-0.03em", margin: "0 0 1.5rem" }}
+              >
+                {service.title}
+              </h2>
+
               {["Your Name", "Phone Number"].map((ph, i) => (
-                <input key={i} type="text" placeholder={ph}
-                  style={{ width: "100%", padding: "13px 16px", border: "1.5px solid #ede8fb", borderRadius: 10, fontFamily: "inherit", fontSize: 15, color: "#1a1a2e", outline: "none", boxSizing: "border-box", background: "#f8f4ff", marginBottom: 12 }}
+                <input
+                  key={i}
+                  type="text"
+                  placeholder={ph}
+                  className="w-full mb-3 text-sm rounded-2xl outline-none transition-all duration-300"
+                  style={{
+                    padding: "13px 18px",
+                    background: "var(--bg-soft)",
+                    border: "1px solid var(--border-soft)",
+                    color: "var(--text)",
+                    fontFamily: "inherit",
+                    display: "block",
+                  }}
                 />
               ))}
-              <input type="date"
-                style={{ width: "100%", padding: "13px 16px", border: "1.5px solid #ede8fb", borderRadius: 10, fontFamily: "inherit", fontSize: 15, color: "#1a1a2e", outline: "none", boxSizing: "border-box", background: "#f8f4ff", marginBottom: 12 }}
+
+              <input
+                type="date"
+                className="w-full mb-3 text-sm rounded-2xl outline-none transition-all duration-300"
+                style={{
+                  padding: "13px 18px",
+                  background: "var(--bg-soft)",
+                  border: "1px solid var(--border-soft)",
+                  color: "var(--text)",
+                  fontFamily: "inherit",
+                  display: "block",
+                }}
               />
-              <textarea placeholder="Any special requirements..." rows={3}
-                style={{ width: "100%", padding: "13px 16px", border: "1.5px solid #ede8fb", borderRadius: 10, fontFamily: "inherit", fontSize: 15, color: "#1a1a2e", resize: "vertical", outline: "none", boxSizing: "border-box", background: "#f8f4ff", marginBottom: 12 }}
+
+              <textarea
+                placeholder="Any special requirements..."
+                rows={3}
+                className="w-full mb-5 text-sm rounded-2xl outline-none transition-all duration-300"
+                style={{
+                  padding: "13px 18px",
+                  background: "var(--bg-soft)",
+                  border: "1px solid var(--border-soft)",
+                  color: "var(--text)",
+                  fontFamily: "inherit",
+                  resize: "vertical",
+                  display: "block",
+                }}
               />
-              <div style={{ display: "flex", gap: 10 }}>
-                <button
+
+              <div className="flex gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => { alert("Thank you! We'll contact you shortly."); setShowBooking(false); }}
-                  style={{ flex: 1, background: "linear-gradient(135deg,#6b4eff,#a855f7)", color: "#fff", border: "none", padding: "13px", borderRadius: 10, fontFamily: "inherit", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
+                  className="btn-primary flex-1 text-sm cursor-pointer"
+                  style={{ border: "none" }}
+                >
                   Confirm Booking
-                </button>
-                <a href="tel:+919999999999"
-                  style={{ flex: 1, textAlign: "center", border: "2px solid #ede8fb", color: "#6b4eff", padding: "13px", borderRadius: 10, fontFamily: "inherit", fontSize: 15, fontWeight: 700, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  📞 Call
-                </a>
+                </motion.button>
+
+                <motion.a
+                  whileHover={{ scale: 1.02 }}
+                  href="tel:+919999999999"
+                  className="flex-1 flex items-center justify-center gap-2 text-sm font-semibold rounded-full transition-all duration-200"
+                  style={{
+                    background: "var(--accent-bg)",
+                    border: "1.5px solid var(--accent-border)",
+                    color: "var(--primary-light)",
+                    textDecoration: "none",
+                  }}
+                >
+                  <Phone size={14} /> Call Us
+                </motion.a>
               </div>
             </motion.div>
           </motion.div>

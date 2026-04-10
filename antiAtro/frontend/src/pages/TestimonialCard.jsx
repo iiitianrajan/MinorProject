@@ -1,223 +1,375 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Star, Quote } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, Quote, Sparkles } from "lucide-react";
 
-const Testimonials = () => {
-  const testimonials = [
-    {
-      name: "Karan Patel",
-      location: "Ahmedabad, India",
-      avatar: "https://randomuser.me/api/portraits/men/41.jpg",
-      rating: 5,
-      text: "Accurate and insightful readings. Highly recommended."
-    },
-    {
-      name: "Riya Sharma",
-      location: "Delhi, India",
-      avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-      rating: 5,
-      text: "This platform completely changed my life! The astrologer gave me clarity about my career and relationship."
-    },
-    {
-      name: "Aman Verma",
-      location: "Mumbai, India",
-      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-      rating: 4,
-      text: "Very accurate predictions. I was surprised how detailed my kundli analysis was."
-    },
-    {
-      name: "Sneha Kapoor",
-      location: "Bangalore, India",
-      avatar: "https://randomuser.me/api/portraits/women/68.jpg",
-      rating: 5,
-      text: "The love compatibility feature helped me understand my relationship better."
-    },
-    {
-      name: "Rahul Mehta",
-      location: "Pune, India",
-      avatar: "https://randomuser.me/api/portraits/men/75.jpg",
-      rating: 5,
-      text: "Career guidance was spot on. Helped me take the right decision!"
-    },
-    {
-      name: "Priya Singh",
-      location: "Jaipur, India",
-      avatar: "https://randomuser.me/api/portraits/women/12.jpg",
-      rating: 4,
-      text: "Very smooth UI and quick response from experts. Loved it!"
-    },
-    {
-      name: "Aman Verma",
-      location: "Mumbai, India",
-      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-      rating: 4,
-      text: "Very accurate predictions. I was surprised how detailed my kundli analysis was."
-    },
-    {
-      name: "Karan Patel",
-      location: "Ahmedabad, India",
-      avatar: "https://randomuser.me/api/portraits/men/41.jpg",
-      rating: 5,
-      text: "Accurate and insightful readings. Highly recommended."
-    },
-    {
-      name: "Aman Verma",
-      location: "Mumbai, India",
-      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-      rating: 4,
-      text: "Very accurate predictions. I was surprised how detailed my kundli analysis was."
-    },{
-      name: "Aman Verma",
-      location: "Mumbai, India",
-      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-      rating: 4,
-      text: "Very accurate predictions. I was surprised how detailed my kundli analysis was."
-    }
-  ];
+const testimonials = [
+  {
+    name: "Karan Patel",
+    location: "Ahmedabad, India",
+    avatar: "https://randomuser.me/api/portraits/men/41.jpg",
+    rating: 5,
+    text: "Accurate and insightful readings. Highly recommended. The astrologer understood my situation perfectly.",
+  },
+  {
+    name: "Riya Sharma",
+    location: "Delhi, India",
+    avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    rating: 5,
+    text: "This platform completely changed my life! The astrologer gave me clarity about my career and relationship.",
+  },
+  {
+    name: "Aman Verma",
+    location: "Mumbai, India",
+    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    rating: 4,
+    text: "Very accurate predictions. I was surprised how detailed my kundli analysis was. Truly eye-opening!",
+  },
+  {
+    name: "Sneha Kapoor",
+    location: "Bangalore, India",
+    avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+    rating: 5,
+    text: "The love compatibility feature helped me understand my relationship better. Absolutely worth it.",
+  },
+  {
+    name: "Rahul Mehta",
+    location: "Pune, India",
+    avatar: "https://randomuser.me/api/portraits/men/75.jpg",
+    rating: 5,
+    text: "Career guidance was spot on. Helped me take the right decision at the right time!",
+  },
+  {
+    name: "Priya Singh",
+    location: "Jaipur, India",
+    avatar: "https://randomuser.me/api/portraits/women/12.jpg",
+    rating: 4,
+    text: "Very smooth UI and quick response from experts. Loved every bit of the experience.",
+  },
+  {
+    name: "Deepak Nair",
+    location: "Chennai, India",
+    avatar: "https://randomuser.me/api/portraits/men/55.jpg",
+    rating: 5,
+    text: "The pandit was incredibly knowledgeable. My family has never felt more spiritually aligned.",
+  },
+  {
+    name: "Anjali Gupta",
+    location: "Kolkata, India",
+    avatar: "https://randomuser.me/api/portraits/women/22.jpg",
+    rating: 5,
+    text: "I was skeptical at first but the reading blew me away. Every detail was accurate!",
+  },
+];
 
+const VISIBLE = 3;
+
+export default function Testimonials() {
   const [index, setIndex] = useState(0);
-  const visibleCards = 3;
-  const cardWidthPercent = 100 / visibleCards;
+  const [direction, setDirection] = useState(1);
+  const maxIndex = testimonials.length - VISIBLE;
+  const intervalRef = useRef(null);
 
-  const next = () => {
-    if (index < testimonials.length - visibleCards) {
-      setIndex(index + 1);
-    }
+  const go = (dir) => {
+    setDirection(dir);
+    setIndex((prev) => Math.min(Math.max(prev + dir, 0), maxIndex));
   };
 
-  const prev = () => {
-    if (index > 0) {
-      setIndex(index - 1);
-    }
+  const goTo = (i) => {
+    setDirection(i > index ? 1 : -1);
+    setIndex(i);
   };
+
+  // Auto-advance
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setDirection(1);
+      setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    }, 4000);
+    return () => clearInterval(intervalRef.current);
+  }, [maxIndex]);
+
+  const stopAuto = () => clearInterval(intervalRef.current);
 
   return (
-    <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50 py-24 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+    <section className="section" style={{ background: "var(--bg)" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Heading */}
-        <div className="text-center mb-16">
-          <p className="text-sm font-semibold tracking-widest uppercase text-orange-400 mb-3">
-            ✦ Trusted by thousands
-          </p>
-          <h2 className="text-5xl font-black mb-4 bg-gradient-to-r from-gray-900 via-orange-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-            What Our Customers Say
-          </h2>
-          <p className="text-lg text-gray-500 max-w-xl mx-auto">
-            Real stories from real people who found clarity and guidance
-          </p>
-        </div>
+        {/* ── Heading ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-14"
+        >
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-5 text-xs font-semibold uppercase tracking-widest"
+            style={{
+              background: "var(--accent-bg)",
+              border: "1px solid var(--accent-border)",
+              color: "var(--primary-light)",
+            }}
+          >
+            <Sparkles size={12} /> Trusted by Thousands
+          </div>
 
-        {/* Slider Wrapper */}
-        <div className="relative">
-
-          {/* Overflow Container */}
-          <div className="overflow-hidden mx-12">
-            <motion.div
-              animate={{ x: `-${index * cardWidthPercent}%` }}
-              transition={{
-                duration: 0.6,
-                ease: [0.25, 0.46, 0.45, 0.94]
+          <h2
+            className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight leading-tight"
+            style={{
+              color: "var(--text-heading)",
+              fontFamily: "Poppins, sans-serif",
+              letterSpacing: "-0.03em",
+            }}
+          >
+            What Our Customers{" "}
+            <span
+              style={{
+                background: "var(--gradient-primary)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
               }}
-              className="flex"
-              style={{ gap: "1.5rem" }}
             >
-              {testimonials.map((test, i) => (
+              Say
+            </span>
+          </h2>
+
+          <p className="text-base max-w-xl mx-auto leading-relaxed" style={{ color: "var(--text-muted)" }}>
+            Real stories from real people who found clarity and guidance.
+          </p>
+        </motion.div>
+
+        {/* ── Slider ── */}
+        <div
+          className="relative"
+          onMouseEnter={stopAuto}
+          onMouseLeave={() => {
+            intervalRef.current = setInterval(() => {
+              setDirection(1);
+              setIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+            }, 4000);
+          }}
+        >
+          {/* Cards viewport */}
+          <div className="overflow-hidden px-1 py-4">
+            <motion.div
+              animate={{ x: `-${index * (100 / VISIBLE)}%` }}
+              transition={{ duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="flex"
+              style={{ gap: "1.25rem" }}
+            >
+              {testimonials.map((t, i) => (
                 <motion.div
                   key={i}
-                  style={{ minWidth: `calc(${cardWidthPercent}% - 1rem)` }}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.08, duration: 0.5 }}
+                  style={{
+                    minWidth: `calc(${100 / VISIBLE}% - ${(1.25 * (VISIBLE - 1)) / VISIBLE}rem)`,
+                    flexShrink: 0,
+                  }}
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 280, damping: 22 }}
                 >
-                  <motion.div
-                    whileHover={{ y: -6, scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="bg-white/90 backdrop-blur-xl rounded-3xl p-8 h-full shadow-md hover:shadow-xl border border-orange-100 relative overflow-hidden group"
+                  {/* ── Card ── */}
+                  <div
+                    className="relative overflow-hidden group h-full"
+                    style={{
+                      background: "var(--bg-elevated)",
+                      borderRadius: "1.5rem",
+                      padding: "1.75rem",
+                      border: "1px solid var(--border-soft)",
+                      boxShadow: "var(--shadow-md)",
+                      minHeight: "220px",
+                      transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = "var(--accent-border)";
+                      e.currentTarget.style.boxShadow = "var(--shadow-lg)";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = "var(--border-soft)";
+                      e.currentTarget.style.boxShadow = "var(--shadow-md)";
+                    }}
                   >
-                    {/* Subtle background glow on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-50/0 to-pink-50/0 group-hover:from-orange-50/60 group-hover:to-pink-50/60 transition-all duration-500 rounded-3xl pointer-events-none" />
-
-                    {/* Quote Icon */}
-                    <Quote
-                      className="absolute top-5 right-5 text-orange-100 group-hover:text-orange-200 transition-colors duration-300"
-                      size={44}
+                    {/* Glow overlay */}
+                    <div
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
+                      style={{
+                        background:
+                          "radial-gradient(circle at 30% 0%, rgba(255,98,0,0.06) 0%, transparent 65%)",
+                        borderRadius: "1.5rem",
+                      }}
                     />
 
-                    {/* User Info */}
-                    <div className="flex items-center gap-4 mb-5 relative z-10">
-                      <div className="relative">
+                    {/* Bottom accent bar */}
+                    <div
+                      className="absolute bottom-0 left-0 w-full h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
+                      style={{
+                        background: "var(--gradient-primary)",
+                        borderRadius: "0 0 1.5rem 1.5rem",
+                      }}
+                    />
+
+                    {/* Quote icon */}
+                    <Quote
+                      size={40}
+                      className="absolute top-5 right-5 pointer-events-none transition-colors duration-300"
+                      style={{ color: "var(--accent-border)" }}
+                    />
+
+                    {/* Avatar + name */}
+                    <div className="flex items-center gap-3 mb-4 relative z-10">
+                      <div className="relative flex-shrink-0">
                         <img
-                          src={test.avatar}
-                          alt={test.name}
-                          className="w-14 h-14 rounded-full border-[3px] border-orange-200 shadow object-cover"
+                          src={t.avatar}
+                          alt={t.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                          style={{ border: "2px solid var(--accent-border)" }}
                         />
-                        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full" />
+                        <span
+                          className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full"
+                          style={{
+                            background: "#22c55e",
+                            border: "2px solid var(--bg-elevated)",
+                          }}
+                        />
                       </div>
                       <div>
-                        <h4 className="font-bold text-gray-900 text-base leading-tight">{test.name}</h4>
-                        <p className="text-xs text-gray-400 mt-0.5">{test.location}</p>
+                        <h4
+                          className="font-semibold text-sm leading-tight"
+                          style={{
+                            color: "var(--text-heading)",
+                            fontFamily: "Poppins, sans-serif",
+                          }}
+                        >
+                          {t.name}
+                        </h4>
+                        <p className="text-xs mt-0.5" style={{ color: "var(--text-soft)" }}>
+                          {t.location}
+                        </p>
                       </div>
                     </div>
 
                     {/* Stars */}
-                    <div className="flex gap-1 mb-4 relative z-10">
+                    <div className="flex items-center gap-0.5 mb-3 relative z-10">
                       {[...Array(5)].map((_, si) => (
                         <Star
                           key={si}
-                          size={16}
-                          className={si < test.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-200 fill-gray-200"}
+                          size={14}
+                          style={{
+                            color: si < t.rating ? "#facc15" : "var(--border-soft)",
+                            fill: si < t.rating ? "#facc15" : "var(--border-soft)",
+                          }}
                         />
                       ))}
-                      <span className="ml-1 text-xs text-gray-400 self-center">{test.rating}.0</span>
+                      <span className="ml-1.5 text-xs font-semibold" style={{ color: "var(--text-soft)" }}>
+                        {t.rating}.0
+                      </span>
                     </div>
 
-                    {/* Testimonial Text */}
-                    <p className="text-gray-600 text-sm leading-relaxed italic relative z-10">
-                      "{test.text}"
+                    {/* Text */}
+                    <p
+                      className="text-sm leading-relaxed italic relative z-10"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      "{t.text}"
                     </p>
-                  </motion.div>
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
           </div>
 
-          {/* Navigation Buttons — outside overflow, perfectly centered */}
-          <button
-            onClick={prev}
-            disabled={index === 0}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-lg border border-gray-100 hover:bg-orange-50 hover:border-orange-200 hover:scale-110 active:scale-95 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-white"
-          >
-            <ChevronLeft size={20} className="text-gray-700" />
-          </button>
-
-          <button
-            onClick={next}
-            disabled={index >= testimonials.length - visibleCards}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center bg-white rounded-full shadow-lg border border-gray-100 hover:bg-orange-50 hover:border-orange-200 hover:scale-110 active:scale-95 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-white"
-          >
-            <ChevronRight size={20} className="text-gray-700" />
-          </button>
+          {/* ── Nav Arrows ── */}
+          {[
+            { side: "-left-5", dir: -1, disabled: index === 0, Icon: ChevronLeft },
+            { side: "-right-5", dir: 1, disabled: index >= maxIndex, Icon: ChevronRight },
+          ].map(({ side, dir, disabled, Icon }) => (
+            <motion.button
+              key={side}
+              onClick={() => go(dir)}
+              disabled={disabled}
+              whileHover={!disabled ? { scale: 1.12 } : {}}
+              whileTap={!disabled ? { scale: 0.94 } : {}}
+              className="absolute top-1/2 -translate-y-1/2 z-20 w-11 h-11 flex items-center justify-center rounded-full transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{
+                [side.includes("left") ? "left" : "right"]: "-1.25rem",
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-soft)",
+                boxShadow: "var(--shadow-md)",
+                color: "var(--text-heading)",
+              }}
+              onMouseEnter={e => {
+                if (!disabled) {
+                  e.currentTarget.style.background = "var(--gradient-primary)";
+                  e.currentTarget.style.borderColor = "transparent";
+                  e.currentTarget.style.color = "#fff";
+                  e.currentTarget.style.boxShadow = "0 0 20px rgba(255,98,0,0.3)";
+                }
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = "var(--bg-elevated)";
+                e.currentTarget.style.borderColor = "var(--border-soft)";
+                e.currentTarget.style.color = "var(--text-heading)";
+                e.currentTarget.style.boxShadow = "var(--shadow-md)";
+              }}
+            >
+              <Icon size={18} />
+            </motion.button>
+          ))}
         </div>
 
-        {/* Dot Indicators */}
+        {/* ── Dot indicators ── */}
         <div className="flex justify-center gap-2 mt-10">
-          {Array.from({ length: testimonials.length - visibleCards + 1 }).map((_, i) => (
+          {Array.from({ length: maxIndex + 1 }).map((_, i) => (
             <button
               key={i}
-              onClick={() => setIndex(i)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                i === index
-                  ? "w-8 bg-orange-400"
-                  : "w-2 bg-orange-200 hover:bg-orange-300"
-              }`}
+              onClick={() => goTo(i)}
+              className="h-2 rounded-full transition-all duration-300"
+              style={{
+                width: i === index ? "2rem" : "0.5rem",
+                background:
+                  i === index ? "var(--primary-light)" : "var(--accent-border)",
+              }}
             />
           ))}
         </div>
 
+        {/* ── Trust summary strip ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+          className="mt-12 flex flex-wrap justify-center gap-4"
+        >
+          {[
+            { emoji: "⭐", value: "4.9 / 5", label: "Average Rating" },
+            { emoji: "💬", value: "50,000+", label: "Reviews" },
+            { emoji: "🛡️", value: "100%", label: "Verified Experts" },
+          ].map((s, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2.5 px-5 py-3 rounded-2xl"
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-soft)",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              <span className="text-xl">{s.emoji}</span>
+              <div>
+                <div
+                  className="text-sm font-bold leading-tight"
+                  style={{ color: "var(--text-heading)", fontFamily: "Poppins, sans-serif" }}
+                >
+                  {s.value}
+                </div>
+                <div className="text-xs" style={{ color: "var(--text-soft)" }}>
+                  {s.label}
+                </div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
-};
-
-export default Testimonials;
+}

@@ -1,27 +1,191 @@
 @import "tailwindcss";
 
+/* 🌍 DESIGN SYSTEM */
 :root {
-  --primary: #FF6200;
-  --primary-light: #FF8C3A;
-  --primary-dark: #E05500;
-  --gold: #FFA500;
-  --yellow: #FFD700;
-  --bg: #f5f5f5;
-  --text: #1a1a1a;
-  --text2: #555;
-  --text3: #888;
-  --border: #e8e8e8;
+  
+  /* 🔶 BRAND */
+  --primary: #a53d00;
+  --primary-light: #ff6200;
+  --primary-dark: #7a2d00;
+
+  /* ✨ ACCENT */
+  --accent: #ff6200;
+  --accent-bg: rgba(255, 98, 0, 0.08);
+  --accent-border: rgba(227, 191, 177, 0.15); /* ghost border */
+
+  /* ⚪ SURFACE SYSTEM (CRITICAL CHANGE) */
+  --bg: #faf9f6;                 /* surface */
+  --bg-soft: #f4f3f1;           /* surface-container-low */
+  --bg-elevated: #ffffff;       /* surface-container-lowest */
+  --bg-high: #e9e8e5;           /* surface-container-high */
+
+  /* 🧊 GLASS (DESIGN.md RULE) */
+  --bg-glass: rgba(250, 249, 246, 0.6);
+  --glass-border: rgba(227, 191, 177, 0.15);
+
+  /* 📝 TEXT */
+  --text: #1a1c1a;
+  --text-heading: #441111;
+  --text-muted: #6b7280;
+  --text-soft: #9ca3af;
+
+  /* 🧱 BORDERS (GHOST ONLY) */
+  --border: transparent;
+  --border-soft: rgba(227, 191, 177, 0.15);
+
+  /* 🌫 DEPTH (SOFT — NOT HEAVY) */
+  --shadow-sm: 0 10px 40px rgba(26, 28, 26, 0.04);
+  --shadow-md: 0 20px 60px rgba(26, 28, 26, 0.05);
+  --shadow-lg: 0 30px 80px rgba(26, 28, 26, 0.06);
+
+  /* 🌈 GRADIENTS (DESIGN.md FIX) */
+  --gradient-primary: linear-gradient(135deg, #a53d00, #ff6200);
+  --gradient-soft: linear-gradient(
+    135deg,
+    rgba(255,98,0,0.06),
+    rgba(255,140,58,0.04)
+  );
 }
 
+/* 🧠 BASE */
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: var(--bg);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: var(--text);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+
+  /* 🔥 TONAL BACKGROUND (NOT FLAT) */
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255,98,0,0.08), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(255,140,58,0.06), transparent 40%),
+    var(--bg);
+
+  min-height: 100vh;
 }
 
-.pdf-mode * {
-  background: #ffffff !important;
-  color: #000000 !important;
-  box-shadow: none !important;
-  border-color: #ddd !important;
+/* 🅰️ TYPOGRAPHY */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: -0.03em;
+  
+}
+
+p {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+/* 📦 RESET */
+* {
+  box-sizing: border-box;
+}
+
+/* 🧊 GLASS (REFINED) */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+/* 💎 CARD (NO BORDER — TONAL DEPTH) */
+.card {
+  background: var(--bg-elevated);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  background: linear-gradient(
+    180deg,
+    var(--bg-elevated),
+    rgba(255,98,0,0.04)
+  );
+}
+
+/* 🌟 SOFT CARD */
+.card-soft {
+  background: var(--bg-soft);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.card-soft:hover {
+  background: linear-gradient(
+    180deg,
+    var(--bg-soft),
+    rgba(255,98,0,0.03)
+  );
+}
+
+/* 🌈 GRADIENT */
+.gradient-primary {
+  background: var(--gradient-primary);
+}
+
+/* ✨ GLOW (SUBTLE LIGHT SOURCE) */
+.glow::before {
+  content: "";
+  position: absolute;
+  inset: -50px;
+  background: radial-gradient(
+    circle,
+    rgba(255,98,0,0.12),
+    transparent 70%
+  );
+  filter: blur(80px);
+  z-index: -1;
+}
+
+/* 📝 TEXT */
+.text-heading {
+  color: var(--text-heading);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* 📦 SECTION (BREATHING SPACE) */
+.section {
+  padding: 6rem 2rem;
+}
+
+/* 🎯 BUTTON (DESIGN.md CORRECT) */
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  padding: 0.75rem 1.6rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 30px rgba(255, 98, 0, 0.25); /* glow instead of shadow */
+  transform: translateY(-2px);
+}
+
+/* 🔥 SCROLLBAR */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.08);
+  border-radius: 10px;
+}
+
+#root {
+  min-height: 100vh;
+  
 }

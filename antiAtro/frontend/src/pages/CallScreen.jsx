@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mic, Volume2, PhoneOff, Star, Sparkles, Shield, Clock } from "lucide-react";
 
 export default function CallScreen() {
   const [status, setStatus] = useState("calling");
@@ -8,7 +10,7 @@ export default function CallScreen() {
   const recognitionRef = useRef(null);
   const isListeningRef = useRef(false);
 
-  // 🔥 Unlock audio (VERY IMPORTANT for Chrome)
+  // 🔥 Unlock audio
   useEffect(() => {
     const unlockAudio = () => {
       const dummy = new SpeechSynthesisUtterance(" ");
@@ -35,12 +37,10 @@ export default function CallScreen() {
 
     recognition.onstart = () => {
       isListeningRef.current = true;
-      console.log("🎤 Listening...");
     };
 
     recognition.onend = () => {
       isListeningRef.current = false;
-      console.log("⛔ Stopped listening");
     };
 
     recognition.onerror = (e) => {
@@ -50,7 +50,6 @@ export default function CallScreen() {
 
     recognition.onresult = async (event) => {
       const userText = event.results[0][0].transcript;
-      console.log("🧑 User:", userText);
 
       try {
         const res = await fetch("http://localhost:5001/api/ai/chat", {
@@ -63,8 +62,6 @@ export default function CallScreen() {
 
         const data = await res.json();
         const reply = data?.reply || "🔮 Kuch clear nahi hai...";
-
-        console.log("🤖 AI Reply:", reply);
         setTimeout(() => speak(reply), 800);
       } catch (err) {
         console.error("❌ API error:", err);
@@ -75,7 +72,7 @@ export default function CallScreen() {
     recognitionRef.current = recognition;
   }, []);
 
-  // 🔊 Speak function (FIXED)
+  // 🔊 Speak function
   function speak(text) {
     if (!text) return;
 
@@ -84,8 +81,6 @@ export default function CallScreen() {
       .replace(/,/g, ", ")
       .replace(/\n/g, "... ")
       .replace(/\s+/g, " ");
-
-    console.log("🔊 Speaking:", processedText);
 
     window.speechSynthesis.cancel();
 
@@ -110,7 +105,6 @@ export default function CallScreen() {
     }, 200);
   }
 
-  // 🎤 Safe mic start
   function startListening() {
     if (!recognitionRef.current) return;
     if (!isListeningRef.current) {
@@ -148,535 +142,519 @@ export default function CallScreen() {
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
-  // ❌ End call
   function endCall() {
     window.speechSynthesis.cancel();
     if (recognitionRef.current && isListeningRef.current) {
       recognitionRef.current.stop();
     }
     setStatus("ended");
-    window.location.href = 'http://localhost:5173/chat'
+    window.location.href = "http://localhost:5173/chat";
   }
 
+  const statusColor =
+    status === "calling"
+      ? "bg-yellow-400"
+      : status === "connected"
+      ? "bg-green-400"
+      : "bg-red-500";
+
+  const statusLabel =
+    status === "calling"
+      ? "Connecting to your astrologer..."
+      : status === "connected"
+      ? "Connected"
+      : "Call Ended";
+
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;500&display=swap');
+    <div
+      className="relative min-h-screen flex flex-col items-center justify-between overflow-hidden"
+      style={{ background: "var(--bg-soft)", perspective: "1200px" }}
+    >
+      {/* ── Background ambient glows ── */}
+      <motion.div
+        animate={{ scale: [1, 1.18, 1], opacity: [0.55, 1, 0.55] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -top-28 -right-28 w-[600px] h-[600px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(255,98,0,0.1) 0%, transparent 65%)",
+          filter: "blur(60px)",
+        }}
+      />
+      <motion.div
+        animate={{ scale: [1, 1.22, 1], opacity: [0.45, 0.85, 0.45] }}
+        transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 2.5 }}
+        className="absolute -bottom-20 -left-20 w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(255,140,58,0.08) 0%, transparent 65%)",
+          filter: "blur(55px)",
+        }}
+      />
 
-        .call-root {
-          font-family: 'Raleway', sans-serif;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: space-between;
-          position: relative;
-          overflow: hidden;
-          background: #0a0010;
-          color: white;
-          padding: 0 1rem;
-        }
-
-        /* ── Layered gradient mesh background ── */
-        .call-root::before {
-          content: '';
-          position: fixed;
-          inset: 0;
-          background:
-            radial-gradient(ellipse 80% 60% at 20% 10%, rgba(180,60,255,0.28) 0%, transparent 60%),
-            radial-gradient(ellipse 60% 50% at 80% 90%, rgba(255,120,30,0.22) 0%, transparent 55%),
-            radial-gradient(ellipse 70% 60% at 60% 40%, rgba(255,50,120,0.15) 0%, transparent 60%),
-            radial-gradient(ellipse 50% 40% at 10% 80%, rgba(100,40,200,0.20) 0%, transparent 55%);
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        /* Floating orbs */
-        .orb {
-          position: fixed;
-          border-radius: 50%;
-          filter: blur(60px);
-          pointer-events: none;
-          z-index: 0;
-          animation: floatOrb 8s ease-in-out infinite;
-        }
-        .orb-1 {
-          width: 320px; height: 320px;
-          background: radial-gradient(circle, rgba(180,60,255,0.35), transparent 70%);
-          top: -80px; left: -80px;
-          animation-delay: 0s;
-        }
-        .orb-2 {
-          width: 280px; height: 280px;
-          background: radial-gradient(circle, rgba(255,100,30,0.30), transparent 70%);
-          bottom: -60px; right: -60px;
-          animation-delay: -3s;
-        }
-        .orb-3 {
-          width: 200px; height: 200px;
-          background: radial-gradient(circle, rgba(255,50,130,0.25), transparent 70%);
-          top: 50%; left: 50%;
-          transform: translate(-50%, -50%);
-          animation-delay: -5s;
-        }
-
-        @keyframes floatOrb {
-          0%, 100% { transform: translateY(0px) scale(1); }
-          50% { transform: translateY(-30px) scale(1.08); }
-        }
-
-        /* ── Noise grain overlay ── */
-        .grain {
-          position: fixed;
-          inset: 0;
-          z-index: 1;
-          pointer-events: none;
-          opacity: 0.045;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-          background-size: 180px;
-        }
-
-        /* ── Top section ── */
-        .top-section {
-          position: relative;
-          z-index: 10;
-          margin-top: 4.5rem;
-          text-align: center;
-        }
-
-        .brand-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: rgba(255,255,255,0.07);
-          border: 1px solid rgba(180,60,255,0.35);
-          border-radius: 999px;
-          padding: 0.3rem 1rem;
-          margin-bottom: 1rem;
-          backdrop-filter: blur(12px);
-          box-shadow: 0 0 20px rgba(180,60,255,0.2), inset 0 1px 0 rgba(255,255,255,0.08);
-        }
-        .brand-pill-dot {
-          width: 8px; height: 8px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #b43cff, #ff7820);
-          box-shadow: 0 0 8px rgba(180,60,255,0.8);
-          animation: pulseDot 2s ease-in-out infinite;
-        }
-        @keyframes pulseDot {
-          0%, 100% { box-shadow: 0 0 6px rgba(180,60,255,0.8); transform: scale(1); }
-          50% { box-shadow: 0 0 14px rgba(255,120,30,0.9); transform: scale(1.25); }
-        }
-        .brand-text {
-          font-family: 'Cinzel', serif;
-          font-size: 0.75rem;
-          font-weight: 600;
-          letter-spacing: 0.15em;
-          background: linear-gradient(90deg, #d98cff, #ff9050, #ff5090);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .call-title {
-          font-family: 'Cinzel', serif;
-          font-size: 1.7rem;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          background: linear-gradient(135deg, #ffffff 0%, #d98cff 50%, #ff9050 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-bottom: 0.5rem;
-          text-shadow: none;
-        }
-
-        .status-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.45rem;
-          font-size: 0.8rem;
-          font-weight: 500;
-          letter-spacing: 0.08em;
-          color: rgba(255,255,255,0.7);
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 999px;
-          padding: 0.25rem 0.85rem;
-          backdrop-filter: blur(8px);
-        }
-        .status-dot {
-          width: 6px; height: 6px;
-          border-radius: 50%;
-        }
-        .status-dot.calling { background: #ffb830; animation: pulseDot 1.2s infinite; }
-        .status-dot.connected { background: #4eff91; box-shadow: 0 0 8px #4eff91; }
-        .status-dot.ended { background: #ff4060; }
-
-        .timer-display {
-          font-family: 'Cinzel', serif;
-          font-size: 1.05rem;
-          font-weight: 600;
-          letter-spacing: 0.12em;
-          margin-top: 0.5rem;
-          background: linear-gradient(90deg, #a78bff, #fbbf6a);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .speaking-indicator {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          margin-top: 0.6rem;
-          font-size: 0.78rem;
-          font-weight: 500;
-          letter-spacing: 0.06em;
-          color: #d98cff;
-          animation: pulseText 1.5s ease-in-out infinite;
-          background: rgba(180,60,255,0.1);
-          border: 1px solid rgba(180,60,255,0.3);
-          border-radius: 999px;
-          padding: 0.2rem 0.75rem;
-        }
-        @keyframes pulseText {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        .sound-bars {
-          display: flex; gap: 2px; align-items: flex-end;
-        }
-        .sound-bars span {
-          display: block;
-          width: 3px;
-          background: linear-gradient(180deg, #ff9050, #b43cff);
-          border-radius: 2px;
-          animation: barBounce 0.6s ease-in-out infinite alternate;
-        }
-        .sound-bars span:nth-child(1) { height: 8px; animation-delay: 0s; }
-        .sound-bars span:nth-child(2) { height: 14px; animation-delay: 0.1s; }
-        .sound-bars span:nth-child(3) { height: 10px; animation-delay: 0.2s; }
-        .sound-bars span:nth-child(4) { height: 16px; animation-delay: 0.15s; }
-        .sound-bars span:nth-child(5) { height: 7px; animation-delay: 0.05s; }
-        @keyframes barBounce {
-          from { transform: scaleY(0.4); opacity: 0.6; }
-          to { transform: scaleY(1); opacity: 1; }
-        }
-
-        /* ── Avatar section ── */
-        .avatar-section {
-          position: relative;
-          z-index: 10;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        /* Ripple rings */
-        .ripple-ring {
-          position: absolute;
-          border-radius: 50%;
-          border: 1.5px solid rgba(180,60,255,0.25);
-          animation: rippleExpand 3s ease-out infinite;
-        }
-        .ripple-ring:nth-child(1) { width: 220px; height: 220px; animation-delay: 0s; }
-        .ripple-ring:nth-child(2) { width: 290px; height: 290px; animation-delay: 0.9s; border-color: rgba(255,120,30,0.18); }
-        .ripple-ring:nth-child(3) { width: 360px; height: 360px; animation-delay: 1.8s; border-color: rgba(255,50,120,0.12); }
-        @keyframes rippleExpand {
-          0% { opacity: 0.8; transform: scale(0.85); }
-          100% { opacity: 0; transform: scale(1.15); }
-        }
-
-        /* Glow blob behind avatar */
-        .avatar-glow {
-          position: absolute;
-          width: 200px; height: 200px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(180,60,255,0.5) 0%, rgba(255,80,30,0.3) 50%, transparent 75%);
-          filter: blur(30px);
-          animation: glowPulse 3s ease-in-out infinite;
-        }
-        @keyframes glowPulse {
-          0%, 100% { transform: scale(1); opacity: 0.7; }
-          50% { transform: scale(1.2); opacity: 1; }
-        }
-
-        /* Avatar orb */
-        .avatar-orb {
-          position: relative;
-          width: 150px; height: 150px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 4rem;
-          background: linear-gradient(135deg, #2a005a 0%, #6b1080 40%, #3a0050 70%, #1a0030 100%);
-          box-shadow:
-            0 0 0 1px rgba(180,60,255,0.4),
-            0 0 0 2px rgba(255,120,30,0.15),
-            0 0 40px rgba(180,60,255,0.5),
-            0 0 80px rgba(255,80,30,0.25),
-            inset 0 1px 0 rgba(255,255,255,0.1);
-          animation: orbFloat 4s ease-in-out infinite;
-          cursor: pointer;
-          transition: transform 0.3s ease;
-        }
-        .avatar-orb:hover {
-          transform: scale(1.06);
-        }
-        @keyframes orbFloat {
-          0%, 100% { transform: translateY(0px); box-shadow: 0 0 0 1px rgba(180,60,255,0.4), 0 0 40px rgba(180,60,255,0.5), 0 20px 40px rgba(0,0,0,0.4); }
-          50% { transform: translateY(-12px); box-shadow: 0 0 0 1px rgba(255,120,30,0.5), 0 0 50px rgba(255,80,30,0.4), 0 30px 50px rgba(0,0,0,0.5); }
-        }
-
-        /* Glassmorphism ring around orb */
-        .avatar-ring {
-          position: absolute;
-          width: 174px; height: 174px;
-          border-radius: 50%;
-          background: conic-gradient(
-            from 0deg,
-            rgba(180,60,255,0.7) 0%,
-            rgba(255,120,30,0.7) 25%,
-            rgba(255,50,120,0.7) 50%,
-            rgba(100,40,200,0.7) 75%,
-            rgba(180,60,255,0.7) 100%
-          );
-          padding: 1.5px;
-          animation: spinRing 6s linear infinite;
-        }
-        .avatar-ring-inner {
-          width: 100%; height: 100%;
-          border-radius: 50%;
-          background: #0a0010;
-        }
-        @keyframes spinRing {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        /* ── Controls ── */
-        .controls-section {
-          position: relative;
-          z-index: 10;
-          margin-bottom: 4rem;
-          display: flex;
-          gap: 1.5rem;
-          align-items: center;
-        }
-
-        .ctrl-btn {
-          position: relative;
-          border: none;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.3rem;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-          backdrop-filter: blur(16px);
-        }
-        .ctrl-btn:hover { transform: scale(1.12); }
-        .ctrl-btn:active { transform: scale(0.95); }
-
-        .ctrl-btn-sm {
-          width: 58px; height: 58px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.15);
-          box-shadow:
-            0 8px 24px rgba(0,0,0,0.3),
-            inset 0 1px 0 rgba(255,255,255,0.1);
-        }
-        .ctrl-btn-sm:hover {
-          background: rgba(255,255,255,0.14);
-          box-shadow: 0 0 20px rgba(180,60,255,0.4), inset 0 1px 0 rgba(255,255,255,0.12);
-        }
-
-        .ctrl-btn-end {
-          width: 72px; height: 72px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #ff2244, #cc1133);
-          border: 1px solid rgba(255,50,80,0.5);
-          box-shadow:
-            0 0 0 4px rgba(255,30,60,0.15),
-            0 12px 32px rgba(255,30,60,0.45),
-            inset 0 1px 0 rgba(255,255,255,0.15);
-        }
-        .ctrl-btn-end:hover {
-          box-shadow:
-            0 0 0 6px rgba(255,30,60,0.25),
-            0 16px 40px rgba(255,30,60,0.6),
-            inset 0 1px 0 rgba(255,255,255,0.2);
-        }
-
-        /* Tooltip on hover */
-        .ctrl-wrap {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.4rem;
-        }
-        .ctrl-label {
-          font-size: 0.62rem;
-          letter-spacing: 0.1em;
-          font-weight: 500;
-          color: rgba(255,255,255,0.4);
-          text-transform: uppercase;
-        }
-
-        /* ── Bottom glass bar ── */
-        .bottom-glass-bar {
-          position: fixed;
-          bottom: 0; left: 0; right: 0;
-          height: 5rem;
-          background: linear-gradient(0deg, rgba(10,0,16,0.95) 0%, transparent 100%);
-          pointer-events: none;
-          z-index: 5;
-        }
-
-        /* ── Particles ── */
-        .particle {
-          position: fixed;
-          width: 3px; height: 3px;
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 2;
-          animation: particleDrift linear infinite;
-          opacity: 0;
-        }
-        @keyframes particleDrift {
-          0% { transform: translateY(100vh) scale(0); opacity: 0; }
-          10% { opacity: 0.7; }
-          90% { opacity: 0.4; }
-          100% { transform: translateY(-10vh) scale(1); opacity: 0; }
-        }
-      `}</style>
-
-      <div className="call-root">
-        {/* Grain */}
-        <div className="grain" />
-
-        {/* Floating orbs */}
-        <div className="orb orb-1" />
-        <div className="orb orb-2" />
-        <div className="orb orb-3" />
-
-        {/* Floating particles */}
-        {[...Array(8)].map((_, i) => (
-          <div
-            key={i}
-            className="particle"
+      {/* ══════════════════════════════
+          TOP BAR
+      ══════════════════════════════ */}
+      <header className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="flex items-center justify-between">
+          {/* Brand pill */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-widest"
             style={{
-              left: `${10 + i * 12}%`,
-              background: i % 2 === 0
-                ? "radial-gradient(circle, #d98cff, transparent)"
-                : "radial-gradient(circle, #ff9050, transparent)",
-              width: `${2 + (i % 3)}px`,
-              height: `${2 + (i % 3)}px`,
-              animationDuration: `${6 + i * 1.4}s`,
-              animationDelay: `${i * 0.9}s`,
+              background: "var(--accent-bg)",
+              border: "1px solid var(--accent-border)",
+              color: "var(--primary)",
             }}
-          />
-        ))}
+          >
+            <motion.span
+              animate={{ scale: [1, 1.5, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="w-2 h-2 rounded-full bg-[var(--primary-light)] block"
+            />
+            Cosmic Connect
+          </motion.div>
 
-        {/* ── Top Section ── */}
-        <div className="top-section">
-          <div className="brand-pill">
-            <div className="brand-pill-dot" />
-            <span className="brand-text">✦ Cosmic Connect ✦</span>
-          </div>
+          {/* Session badges */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="flex items-center gap-3"
+          >
+            <div
+              className="hidden sm:flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-soft)",
+                color: "var(--text-muted)",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              <Shield size={11} className="text-green-500" />
+              End-to-end encrypted
+            </div>
+            <div
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-soft)",
+                color: "var(--text-muted)",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              <Clock size={11} className="text-[var(--primary)]" />
+              45 min session
+            </div>
+          </motion.div>
+        </div>
+      </header>
 
-          <h2 className="call-title">🔮 Astro Call</h2>
+      {/* ══════════════════════════════
+          MAIN CONTENT
+      ══════════════════════════════ */}
+      <main className="relative z-10 flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1">
 
-          <div>
-            <span className="status-badge">
-              <span
-                className={`status-dot ${
-                  status === "calling"
-                    ? "calling"
-                    : status === "connected"
-                    ? "connected"
-                    : "ended"
-                }`}
-              />
-              {status === "calling"
-                ? "Calling astrologer..."
-                : status === "connected"
-                ? "Connected"
-                : "Call Ended"}
-            </span>
-          </div>
+        {/* ── LEFT: Astrologer Card ── */}
+        <motion.div
+          initial={{ opacity: 0, x: -40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+          className="w-full max-w-[280px]"
+        >
+          <div
+            className="card relative overflow-hidden"
+            style={{ boxShadow: "var(--shadow-md)" }}
+          >
+            {/* Live badge */}
+            <div className="absolute top-4 right-4 z-10">
+              <motion.div
+                animate={{ opacity: [1, 0.6, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold text-white"
+                style={{ background: "var(--gradient-primary)" }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-white block" />
+                LIVE
+              </motion.div>
+            </div>
 
-          {status === "connected" && (
-            <p className="timer-display">{formatTime()}</p>
-          )}
-
-          {speaking && (
-            <div style={{ display: "flex", justifyContent: "center", marginTop: "0.5rem" }}>
-              <span className="speaking-indicator">
-                <div className="sound-bars">
-                  <span /><span /><span /><span /><span />
+            {/* Avatar */}
+            <div className="relative mb-4">
+              <div
+                className="w-20 h-20 rounded-2xl mx-auto overflow-hidden"
+                style={{
+                  border: "2px solid var(--accent-border)",
+                  boxShadow: "0 0 24px rgba(255,98,0,0.15)",
+                }}
+              >
+                <div
+                  className="w-full h-full flex items-center justify-center text-4xl"
+                  style={{ background: "var(--gradient-soft)" }}
+                >
+                  🔮
                 </div>
-                Astro bol raha hai...
+              </div>
+              {/* Pulse ring when speaking */}
+              <AnimatePresence>
+                {speaking && (
+                  <motion.div
+                    initial={{ scale: 1, opacity: 0.8 }}
+                    animate={{ scale: 1.4, opacity: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                    className="absolute inset-0 rounded-full border-2 border-[var(--primary-light)] mx-auto my-auto"
+                    style={{ width: 80, height: 80, top: 0, left: "50%", transform: "translateX(-50%)" }}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="text-center">
+              <h3
+                className="font-bold text-lg mb-0.5"
+                style={{ color: "var(--text-heading)", fontFamily: "Poppins, sans-serif" }}
+              >
+                Expert Astrologer
+              </h3>
+              <p className="text-xs font-semibold mb-3" style={{ color: "var(--primary)" }}>
+                Senior Astrological Consultant
+              </p>
+
+              <div className="flex items-center justify-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={11} className="text-yellow-400 fill-yellow-400" />
+                ))}
+                <span className="text-xs ml-1" style={{ color: "var(--text-soft)" }}>5.0</span>
+              </div>
+
+              <div
+                className="flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs"
+                style={{
+                  background: "var(--bg-soft)",
+                  color: "var(--text-muted)",
+                  border: "1px solid var(--border-soft)",
+                }}
+              >
+                <Sparkles size={11} className="text-[var(--primary)]" />
+                Natal Chart Synthesis
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* ── CENTER: Orb / Visualizer ── */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+          className="flex flex-col items-center gap-8"
+        >
+          {/* Orb */}
+          <div className="relative flex items-center justify-center" style={{ width: 220, height: 220 }}>
+            {/* Ripple rings */}
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                animate={{ scale: [0.85, 1.15], opacity: [0.6, 0] }}
+                transition={{ duration: 2.8, repeat: Infinity, delay: i * 0.9, ease: "easeOut" }}
+                className="absolute rounded-full"
+                style={{
+                  width: 160 + i * 40,
+                  height: 160 + i * 40,
+                  border: "1.5px solid var(--accent-border)",
+                }}
+              />
+            ))}
+
+            {/* Glow blob */}
+            <motion.div
+              animate={{ scale: [1, 1.2, 1], opacity: [0.6, 1, 0.6] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute rounded-full pointer-events-none"
+              style={{
+                width: 160,
+                height: 160,
+                background: "radial-gradient(circle, rgba(255,98,0,0.25) 0%, transparent 70%)",
+                filter: "blur(24px)",
+              }}
+            />
+
+            {/* Spinning gradient ring */}
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+              className="absolute rounded-full"
+              style={{
+                width: 150,
+                height: 150,
+                background: "conic-gradient(from 0deg, var(--primary), var(--primary-light), var(--primary-dark), var(--primary))",
+                padding: 2,
+                borderRadius: "50%",
+              }}
+            >
+              <div
+                className="w-full h-full rounded-full"
+                style={{ background: "var(--bg-soft)" }}
+              />
+            </motion.div>
+
+            {/* Core orb */}
+            <motion.div
+              animate={{ y: [0, -10, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+              className="relative z-10 flex items-center justify-center rounded-full text-4xl"
+              style={{
+                width: 130,
+                height: 130,
+                background: "var(--gradient-primary)",
+                boxShadow: "0 0 40px rgba(255,98,0,0.4), 0 20px 40px rgba(165,61,0,0.3)",
+              }}
+            >
+              🔮
+            </motion.div>
+          </div>
+
+          {/* Sound bars visualizer */}
+          <AnimatePresence>
+            {speaking && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="flex items-end gap-1 h-8"
+              >
+                {[8, 16, 10, 20, 12, 18, 8, 14, 10].map((h, i) => (
+                  <motion.span
+                    key={i}
+                    animate={{ scaleY: [0.4, 1, 0.4] }}
+                    transition={{
+                      duration: 0.6,
+                      repeat: Infinity,
+                      delay: i * 0.07,
+                      ease: "easeInOut",
+                    }}
+                    className="block w-1 rounded-full"
+                    style={{
+                      height: h,
+                      background: "var(--gradient-primary)",
+                      transformOrigin: "bottom",
+                    }}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Status */}
+          <div className="text-center">
+            <div
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 mb-2"
+              style={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border-soft)",
+                boxShadow: "var(--shadow-sm)",
+              }}
+            >
+              <motion.span
+                animate={status === "calling" ? { opacity: [1, 0.4, 1] } : {}}
+                transition={{ duration: 1, repeat: Infinity }}
+                className={`w-2 h-2 rounded-full block ${statusColor}`}
+              />
+              <span
+                className="text-sm font-semibold"
+                style={{ color: "var(--text-heading)" }}
+              >
+                {statusLabel}
               </span>
             </div>
-          )}
-        </div>
 
-        {/* ── Avatar Section ── */}
-        <div className="avatar-section">
-          <div className="avatar-glow" />
-          <div className="ripple-ring" />
-          <div className="ripple-ring" />
-          <div className="ripple-ring" />
+            {status === "connected" && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-2xl font-bold tracking-tight"
+                style={{ color: "var(--primary)", fontFamily: "Poppins, sans-serif" }}
+              >
+                {formatTime()}
+              </motion.p>
+            )}
 
-          <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {/* Spinning gradient ring */}
-            <div className="avatar-ring" style={{ position: "absolute" }}>
-              <div className="avatar-ring-inner" />
+            {speaking && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="text-xs font-medium mt-2"
+                style={{ color: "var(--primary-light)" }}
+              >
+                ✦ Astro is speaking...
+              </motion.p>
+            )}
+          </div>
+        </motion.div>
+
+        {/* ── RIGHT: Info Panel ── */}
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+          className="w-full max-w-[280px] flex flex-col gap-4"
+        >
+          {/* Session info card */}
+          <div className="card" style={{ boxShadow: "var(--shadow-md)" }}>
+            <p
+              className="text-xs font-semibold uppercase tracking-widest mb-3"
+              style={{ color: "var(--primary)" }}
+            >
+              ✦ Session Info
+            </p>
+            {[
+              { label: "Mode", value: "Voice Consultation" },
+              { label: "Type", value: "Natal Chart Synthesis" },
+              { label: "Duration", value: "45 min session" },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between py-2.5"
+                style={{
+                  borderBottom: i < 2 ? "1px solid var(--border-soft)" : "none",
+                }}
+              >
+                <span className="text-xs" style={{ color: "var(--text-soft)" }}>
+                  {item.label}
+                </span>
+                <span
+                  className="text-xs font-semibold"
+                  style={{ color: "var(--text-heading)" }}
+                >
+                  {item.value}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Trust badges */}
+          <div
+            className="card-soft"
+            style={{ border: "1px solid var(--border-soft)" }}
+          >
+            {[
+              { icon: Shield, text: "100% Private & Secure" },
+              { icon: Star, text: "Verified Expert Astrologer" },
+              { icon: Sparkles, text: "First consultation free" },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ x: 4 }}
+                transition={{ type: "spring", stiffness: 320 }}
+                className="flex items-center gap-2.5 py-2"
+                style={{
+                  borderBottom: i < 2 ? "1px solid var(--border-soft)" : "none",
+                }}
+              >
+                <div
+                  className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: "var(--accent-bg)",
+                    border: "1px solid var(--accent-border)",
+                  }}
+                >
+                  <item.icon size={13} className="text-[var(--primary)]" />
+                </div>
+                <span className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
+                  {item.text}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </main>
+
+      {/* ══════════════════════════════
+          CONTROL BAR
+      ══════════════════════════════ */}
+      <footer className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="flex items-center justify-center gap-4"
+        >
+          {/* Glass control bar */}
+          <div
+            className="glass flex items-center gap-3 sm:gap-5 px-6 py-4 rounded-[2rem]"
+            style={{
+              border: "1px solid var(--border-soft)",
+              boxShadow: "var(--shadow-md)",
+            }}
+          >
+            {/* Mic */}
+            <div className="flex flex-col items-center gap-1">
+              <motion.button
+                whileHover={{ scale: 1.1, y: -2 }}
+                whileTap={{ scale: 0.93 }}
+                onClick={startListening}
+                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300"
+                style={{
+                  background: "var(--bg-elevated)",
+                  border: "1px solid var(--border-soft)",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+              >
+                <Mic size={18} style={{ color: "var(--text-heading)" }} />
+              </motion.button>
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider"
+                style={{ color: "var(--text-soft)" }}
+              >
+                Mute
+              </span>
             </div>
-            <div className="avatar-orb">🔮</div>
-          </div>
-        </div>
 
-        {/* ── Controls ── */}
-        <div className="controls-section">
-          <div className="ctrl-wrap">
-            <button
-              onClick={startListening}
-              className="ctrl-btn ctrl-btn-sm"
-              title="Start Mic"
-            >
-              🎤
-            </button>
-            <span className="ctrl-label">Mic</span>
-          </div>
+            {/* End Call — primary action */}
+            <div className="flex flex-col items-center gap-1">
+              <motion.button
+                whileHover={{ scale: 1.08, y: -3, boxShadow: "0 0 30px rgba(255,98,0,0.45)" }}
+                whileTap={{ scale: 0.94 }}
+                onClick={endCall}
+                className="btn-primary w-14 h-14 rounded-full flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, #dc2626, #b91c1c)" }}
+              >
+                <PhoneOff size={20} color="white" />
+              </motion.button>
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider"
+                style={{ color: "var(--text-soft)" }}
+              >
+                End Call
+              </span>
+            </div>
 
-          <div className="ctrl-wrap">
-            <button
-              onClick={endCall}
-              className="ctrl-btn ctrl-btn-end"
-              title="End Call"
-            >
-              ✕
-            </button>
-            <span className="ctrl-label">End</span>
+            {/* Speaker */}
+            <div className="flex flex-col items-center gap-1">
+              <motion.button
+                whileHover={{ scale: 1.1, y: -2 }}
+                whileTap={{ scale: 0.93 }}
+                className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300"
+                style={{
+                  background: "var(--bg-elevated)",
+                  border: "1px solid var(--border-soft)",
+                  boxShadow: "var(--shadow-sm)",
+                }}
+              >
+                <Volume2 size={18} style={{ color: "var(--text-heading)" }} />
+              </motion.button>
+              <span
+                className="text-[10px] font-semibold uppercase tracking-wider"
+                style={{ color: "var(--text-soft)" }}
+              >
+                Speaker
+              </span>
+            </div>
           </div>
-
-          <div className="ctrl-wrap">
-            <button className="ctrl-btn ctrl-btn-sm" title="Speaker">
-              🔊
-            </button>
-            <span className="ctrl-label">Speaker</span>
-          </div>
-        </div>
-
-        {/* Bottom fade */}
-        <div className="bottom-glass-bar" />
-      </div>
-    </>
+        </motion.div>
+      </footer>
+    </div>
   );
 }

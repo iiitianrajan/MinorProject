@@ -1,7 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Sparkles, MapPin, Clock, User, Calendar, Zap, Star } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Sparkles, MapPin, Clock, User, Calendar, Zap, Star,
+  Shield, CheckCircle, ArrowRight, Users, Award
+} from "lucide-react";
+
+/* ─── Shared helpers from Home.jsx ─── */
+const SLabel = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-5 text-xs font-semibold uppercase tracking-widest bg-[var(--accent-bg)] text-[var(--primary)] border border-[var(--accent-border)]"
+  >
+    {children}
+  </motion.div>
+);
 
 const pageVariant = {
   hidden: { opacity: 0, y: 30 },
@@ -11,6 +26,7 @@ const pageVariant = {
 
 const Kundli = () => {
   const navigate = useNavigate();
+  const [focusedField, setFocusedField] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -24,11 +40,11 @@ const Kundli = () => {
     place: "",
   });
 
-  const handleChange = function (e) {
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const getZodiac = function (day, month) {
+  const getZodiac = (day, month) => {
     day = Number(day);
     month = Number(month);
     if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "Aries";
@@ -45,7 +61,7 @@ const Kundli = () => {
     return "Pisces";
   };
 
-  const handleSubmit = function () {
+  const handleSubmit = () => {
     if (!form.name || !form.day || !form.month) {
       alert("Please fill required fields");
       return;
@@ -54,28 +70,50 @@ const Kundli = () => {
     navigate("/kundli-result", { state: { ...form, zodiac } });
   };
 
-  function focusInput(e) {
-    e.target.style.border = "1.5px solid rgba(168,85,247,0.6)";
-    e.target.style.boxShadow = "0 0 0 3px rgba(168,85,247,0.1)";
-    e.target.style.background = "rgba(255,255,255,0.95)";
-  }
-
-  function blurInput(e) {
-    e.target.style.border = "1.5px solid rgba(168,85,247,0.2)";
-    e.target.style.boxShadow = "none";
-    e.target.style.background = "rgba(255,255,255,0.7)";
-  }
-
-  const baseInput =
-    "w-full px-4 py-3 rounded-xl outline-none text-sm text-gray-800 transition-all";
-  const baseInputStyle = {
-    border: "1.5px solid rgba(168,85,247,0.2)",
-    background: "rgba(255,255,255,0.7)",
-    backdropFilter: "blur(8px)",
+  /* Shared input style — uses design tokens */
+  const inputBase = {
+    background: "var(--bg-elevated)",
+    border: "1px solid var(--border-soft)",
+    borderRadius: "0.875rem",
+    color: "var(--text)",
+    outline: "none",
+    transition: "all 0.25s ease",
+    width: "100%",
+    padding: "0.75rem 1rem",
+    fontSize: "0.875rem",
+    fontWeight: 500,
   };
 
-  const smallInput =
-    "px-3 py-3 rounded-xl outline-none text-sm text-gray-800 text-center transition-all";
+  const inputFocused = {
+    border: "1px solid var(--accent-border)",
+    boxShadow: "0 0 0 3px var(--accent-bg)",
+    background: "var(--bg-elevated)",
+  };
+
+  const getLabelStyle = () => ({
+    display: "flex",
+    alignItems: "center",
+    gap: "0.375rem",
+    fontSize: "0.7rem",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    color: "var(--primary)",
+    marginBottom: "0.5rem",
+  });
+
+  const features = [
+    { icon: "🪐", title: "Planetary Placements", desc: "Discover which constellations held your planets at birth and how they shape your personality traits." },
+    { icon: "🏛️", title: "The 12 Houses", desc: "Understand the specific life arenas—from career to romance—where your cosmic energy is most focused." },
+    { icon: "✦", title: "Aspects & Transits", desc: "Analyze the angular relationships between planets that define your unique challenges and natural gifts." },
+  ];
+
+  const infoPills = [
+    { icon: <Zap size={11} />, text: "Vedic Calculation" },
+    { icon: <CheckCircle size={11} />, text: "Instant Result" },
+    { icon: <Shield size={11} />, text: "100% Private" },
+    { icon: <Sparkles size={11} />, text: "Free Forever" },
+  ];
 
   return (
     <motion.div
@@ -84,393 +122,401 @@ const Kundli = () => {
       animate="visible"
       exit="exit"
       transition={{ duration: 0.4 }}
-      className="min-h-screen py-10 font-sans relative overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(135deg,#fdf4ff 0%,#fff7ed 30%,#fdf2f8 60%,#fffbeb 100%)",
-      }}
+      className="overflow-x-hidden"
+      style={{ background: "var(--bg-soft)" }}
     >
-      {/* Ambient blobs */}
-      <div
-        className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle,rgba(168,85,247,0.13) 0%,transparent 70%)",
-          filter: "blur(60px)",
-          transform: "translate(-30%,-30%)",
-        }}
-      />
-      <div
-        className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle,rgba(251,146,60,0.13) 0%,transparent 70%)",
-          filter: "blur(60px)",
-          transform: "translate(30%,30%)",
-        }}
-      />
-      <div
-        className="absolute top-1/2 left-1/2 w-[300px] h-[300px] rounded-full pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle,rgba(236,72,153,0.08) 0%,transparent 70%)",
-          filter: "blur(70px)",
-          transform: "translate(-50%,-50%)",
-        }}
-      />
+      {/* ═══════════════════════════════════
+          HERO — two-column
+      ═══════════════════════════════════ */}
+      <section className="relative min-h-screen flex items-center pt-24 pb-32 overflow-hidden">
 
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Hero Header */}
+        {/* Ambient glow blobs */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-10"
-        >
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="flex justify-center mb-4"
-          >
-            <div
-              className="w-16 h-16 rounded-full flex items-center justify-center text-2xl"
-              style={{
-                background: "linear-gradient(135deg,#a855f7,#ec4899,#f59e0b)",
-                boxShadow: "0 0 28px rgba(168,85,247,0.45)",
-              }}
+          animate={{ scale: [1, 1.18, 1], opacity: [0.55, 1, 0.55] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-28 -right-28 w-[600px] h-[600px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(255,98,0,0.1) 0%, transparent 65%)", filter: "blur(60px)" }}
+        />
+        <motion.div
+          animate={{ scale: [1, 1.22, 1], opacity: [0.45, 0.85, 0.45] }}
+          transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 2.5 }}
+          className="absolute -bottom-20 -left-20 w-[500px] h-[500px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(255,140,58,0.08) 0%, transparent 65%)", filter: "blur(55px)" }}
+        />
+
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-14 lg:gap-20">
+
+            {/* ── LEFT: Copy ── */}
+            <motion.div
+              initial={{ opacity: 0, x: -52 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.95, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full lg:w-1/2 flex flex-col items-start"
             >
-              🔮
-            </div>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="inline-flex items-center gap-2 rounded-full px-4 py-2 mb-6 text-xs font-semibold uppercase tracking-widest bg-[var(--accent-bg)] border border-[var(--accent-border)] text-[var(--primary)]">
+                  <Award size={11} />
+                  Divine Alignment · 100% Free
+                </div>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.32 }}
+                className="font-bold leading-[1.05] mb-5 tracking-tight text-[var(--text-heading)]"
+                style={{ fontSize: "clamp(2.4rem, 6vw, 4.8rem)", fontFamily: "Poppins, sans-serif" }}
+              >
+                Decode the<br />
+                <motion.span
+                  animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  style={{
+                    background: "linear-gradient(90deg, var(--primary-dark), var(--primary), var(--primary-light), var(--primary))",
+                    backgroundSize: "220% auto",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    display: "inline-block",
+                  }}
+                >
+                  Cosmic Language
+                </motion.span>
+                <br />of Your Birth
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.42 }}
+                className="text-base mb-8 leading-relaxed max-w-[460px] text-[var(--text-muted)]"
+              >
+                Your birth chart is a snapshot of the heavens at the moment you took your first breath. Enter your details to reveal your celestial blueprint and unlock the secrets of your soul's journey.
+              </motion.p>
+
+              {/* Social proof */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.56 }}
+                className="flex items-center gap-3 mb-10"
+              >
+                <div className="flex -space-x-2">
+                  {["img=1", "img=5", "img=12"].map((s, i) => (
+                    <img
+                      key={i}
+                      src={`https://i.pravatar.cc/40?${s}`}
+                      alt=""
+                      className="w-8 h-8 rounded-full border-2 border-[var(--bg-elevated)]"
+                    />
+                  ))}
+                </div>
+                <p className="text-xs font-semibold text-[var(--text-soft)]">
+                  Joined by <span className="text-[var(--text-heading)]">15,000+</span> seekers this moon cycle
+                </p>
+              </motion.div>
+
+              {/* Trust stats */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.68 }}
+                className="flex items-center gap-8 sm:gap-10 pt-8 border-t border-[var(--border-soft)] w-full"
+              >
+                {[
+                  { v: "5 Cr+", l: "Users" },
+                  { v: "4.8 ★", l: "Rating" },
+                  { v: "100%", l: "Secure" },
+                ].map((s, i) => (
+                  <motion.div key={i} whileHover={{ y: -5 }} transition={{ type: "spring", stiffness: 320 }}>
+                    <div className="text-2xl font-bold tracking-tight text-[var(--text-heading)]" style={{ fontFamily: "Poppins, sans-serif" }}>{s.v}</div>
+                    <div className="text-xs font-medium mt-0.5 text-[var(--text-soft)]">{s.l}</div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
+
+            {/* ── RIGHT: Form Card ── */}
+            <motion.div
+              initial={{ opacity: 0, x: 52 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.95, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full lg:w-1/2 max-w-[520px]"
+            >
+              <div
+                className="card relative overflow-hidden"
+                style={{ boxShadow: "var(--shadow-lg)", border: "1px solid var(--border-soft)" }}
+              >
+                {/* Top accent line */}
+                <div
+                  className="absolute top-0 left-0 right-0 h-0.5 rounded-t-[1.5rem]"
+                  style={{ background: "var(--gradient-primary)" }}
+                />
+
+                {/* Card header */}
+                <div className="flex items-center gap-3 mb-7 pb-5" style={{ borderBottom: "1px solid var(--border-soft)" }}>
+                  <motion.div
+                    whileHover={{ rotate: 13, scale: 1.18 }}
+                    transition={{ type: "spring", stiffness: 320 }}
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center gradient-primary"
+                    style={{ boxShadow: "0 6px 20px rgba(255,98,0,0.28)" }}
+                  >
+                    <Sparkles size={18} color="white" />
+                  </motion.div>
+                  <div>
+                    <h2 className="font-bold text-lg text-[var(--text-heading)]" style={{ fontFamily: "Poppins, sans-serif" }}>
+                      Kundli Creation
+                    </h2>
+                    <p className="text-xs text-[var(--text-soft)]">Precise astronomical calculations for your birth chart.</p>
+                  </div>
+                </div>
+
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                    {/* NAME */}
+                    <div>
+                      <label style={getLabelStyle()}>
+                        <User size={11} /> Full Name
+                      </label>
+                      <input
+                        name="name"
+                        value={form.name}
+                        onChange={handleChange}
+                        type="text"
+                        placeholder="Enter your full name"
+                        style={{
+                          ...inputBase,
+                          ...(focusedField === "name" ? inputFocused : {}),
+                        }}
+                        onFocus={() => setFocusedField("name")}
+                        onBlur={() => setFocusedField(null)}
+                      />
+                    </div>
+
+                    {/* GENDER */}
+                    <div>
+                      <label style={getLabelStyle()}>
+                        <Star size={11} /> Gender
+                      </label>
+                      <select
+                        name="gender"
+                        value={form.gender}
+                        onChange={handleChange}
+                        style={{
+                          ...inputBase,
+                          cursor: "pointer",
+                          ...(focusedField === "gender" ? inputFocused : {}),
+                        }}
+                        onFocus={() => setFocusedField("gender")}
+                        onBlur={() => setFocusedField(null)}
+                      >
+                        <option>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                      </select>
+                    </div>
+
+                    {/* BIRTH DATE */}
+                    <div>
+                      <label style={getLabelStyle()}>
+                        <Calendar size={11} /> Date of Birth
+                      </label>
+                      <div className="flex gap-2">
+                        {[
+                          { name: "day", placeholder: "DD" },
+                          { name: "month", placeholder: "MM" },
+                          { name: "year", placeholder: "YYYY" },
+                        ].map((field) => (
+                          <input
+                            key={field.name}
+                            name={field.name}
+                            onChange={handleChange}
+                            placeholder={field.placeholder}
+                            style={{
+                              ...inputBase,
+                              textAlign: "center",
+                              flex: 1,
+                              padding: "0.75rem 0.4rem",
+                              ...(focusedField === field.name ? inputFocused : {}),
+                            }}
+                            onFocus={() => setFocusedField(field.name)}
+                            onBlur={() => setFocusedField(null)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* BIRTH TIME */}
+                    <div>
+                      <label style={getLabelStyle()}>
+                        <Clock size={11} /> Time of Birth
+                      </label>
+                      <div className="flex gap-2">
+                        {["hour", "minute"].map((f) => (
+                          <input
+                            key={f}
+                            name={f}
+                            onChange={handleChange}
+                            placeholder={f === "hour" ? "HH" : "MM"}
+                            style={{
+                              ...inputBase,
+                              textAlign: "center",
+                              flex: 1,
+                              padding: "0.75rem 0.4rem",
+                              ...(focusedField === f ? inputFocused : {}),
+                            }}
+                            onFocus={() => setFocusedField(f)}
+                            onBlur={() => setFocusedField(null)}
+                          />
+                        ))}
+                        <select
+                          name="ampm"
+                          onChange={handleChange}
+                          style={{
+                            ...inputBase,
+                            flex: 1,
+                            cursor: "pointer",
+                            padding: "0.75rem 0.4rem",
+                            textAlign: "center",
+                            ...(focusedField === "ampm" ? inputFocused : {}),
+                          }}
+                          onFocus={() => setFocusedField("ampm")}
+                          onBlur={() => setFocusedField(null)}
+                        >
+                          <option>AM</option>
+                          <option>PM</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BIRTH PLACE */}
+                  <div>
+                    <label style={getLabelStyle()}>
+                      <MapPin size={11} /> Birth Location
+                    </label>
+                    <input
+                      name="place"
+                      onChange={handleChange}
+                      placeholder="Search city..."
+                      style={{
+                        ...inputBase,
+                        ...(focusedField === "place" ? inputFocused : {}),
+                      }}
+                      onFocus={() => setFocusedField("place")}
+                      onBlur={() => setFocusedField(null)}
+                    />
+                  </div>
+
+                  {/* Info pills */}
+                  <div className="flex flex-wrap gap-2">
+                    {infoPills.map((pill, i) => (
+                      <motion.span
+                        key={i}
+                        whileHover={{ y: -2, scale: 1.04 }}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full cursor-default"
+                        style={{
+                          background: "var(--accent-bg)",
+                          border: "1px solid var(--accent-border)",
+                          color: "var(--primary)",
+                        }}
+                      >
+                        {pill.icon} {pill.text}
+                      </motion.span>
+                    ))}
+                  </div>
+
+                  {/* SUBMIT */}
+                  <motion.button
+                    type="button"
+                    onClick={handleSubmit}
+                    whileHover={{ scale: 1.02, y: -2, boxShadow: "0 0 30px rgba(255,98,0,0.3)" }}
+                    whileTap={{ scale: 0.97 }}
+                    className="btn-primary w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-3"
+                  >
+                    <Zap size={18} />
+                    Cast My Celestial Blueprint
+                    <motion.span
+                      animate={{ rotate: [0, 10, -10, 0] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <Sparkles size={16} />
+                    </motion.span>
+                  </motion.button>
+
+                  <p className="text-center text-xs text-[var(--text-soft)]">
+                    By casting your blueprint, you agree to our 100% data privacy guarantee. Your celestial coordinates are used only for chart calculation.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════
+          WHAT YOUR CHART REVEALS
+      ═══════════════════════════════════ */}
+      <section className="section bg-[var(--bg)]">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 26 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-14"
+          >
+            <SLabel><Sparkles size={12} /> Your Blueprint</SLabel>
+            <h2
+              className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 tracking-tight text-[var(--text-heading)] leading-tight"
+              style={{ fontFamily: "Poppins, sans-serif" }}
+            >
+              What your chart reveals
+            </h2>
+            <div className="w-12 h-1 rounded-full mx-auto" style={{ background: "var(--gradient-primary)" }} />
           </motion.div>
 
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles size={14} style={{ color: "#f59e0b" }} />
-            <span
-              className="text-xs font-bold uppercase tracking-widest"
-              style={{
-                background: "linear-gradient(90deg,#f59e0b,#ec4899)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              100% Free
-            </span>
-            <Sparkles size={14} style={{ color: "#f59e0b" }} />
-          </div>
-
-          <h1
-            className="text-4xl md:text-5xl font-black mb-3"
-            style={{
-              background:
-                "linear-gradient(90deg,#1f2937 0%,#7c3aed 45%,#ec4899 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            Free Kundli Online
-          </h1>
-          <p className="text-gray-500 text-base">
-            Generate your exhaustive Janam Kundli completely free.
-          </p>
-        </motion.div>
-
-        {/* Form Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-3xl p-8 relative overflow-hidden"
-          style={{
-            background: "rgba(255,255,255,0.75)",
-            backdropFilter: "blur(20px)",
-            border: "1px solid rgba(168,85,247,0.15)",
-            boxShadow: "0 8px 40px rgba(168,85,247,0.1)",
-          }}
-        >
-          {/* Top gradient line */}
-          <div
-            className="absolute top-0 left-0 right-0 h-0.5"
-            style={{
-              background: "linear-gradient(90deg,#a855f7,#ec4899,#f59e0b)",
-            }}
-          />
-
-          {/* Section heading */}
-          <div className="flex items-center gap-3 mb-8 pb-5"
-            style={{ borderBottom: "1px solid rgba(168,85,247,0.12)" }}
-          >
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-base"
-              style={{
-                background: "linear-gradient(135deg,#a855f7,#ec4899)",
-                boxShadow: "0 4px 12px rgba(168,85,247,0.3)",
-              }}
-            >
-              ✨
-            </div>
-            <h2
-              className="text-xl font-black"
-              style={{
-                background: "linear-gradient(90deg,#7c3aed,#ec4899)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              New Kundli
-            </h2>
-          </div>
-
-          <form className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-              {/* NAME */}
-              <div>
-                <label
-                  className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider mb-2"
-                  style={{
-                    background: "linear-gradient(90deg,#7c3aed,#ec4899)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  <User size={12} style={{ color: "#7c3aed" }} />
-                  Name
-                </label>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  type="text"
-                  placeholder="Enter full name"
-                  className={baseInput}
-                  style={{ ...baseInputStyle }}
-                  onFocus={focusInput}
-                  onBlur={blurInput}
-                />
-              </div>
-
-              {/* GENDER */}
-              <div>
-                <label
-                  className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider mb-2"
-                  style={{
-                    background: "linear-gradient(90deg,#7c3aed,#ec4899)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  <Star size={12} style={{ color: "#ec4899" }} />
-                  Gender
-                </label>
-                <select
-                  name="gender"
-                  value={form.gender}
-                  onChange={handleChange}
-                  className={baseInput}
-                  style={{ ...baseInputStyle, cursor: "pointer" }}
-                  onFocus={focusInput}
-                  onBlur={blurInput}
-                >
-                  <option>Male</option>
-                  <option>Female</option>
-                  <option>Other</option>
-                </select>
-              </div>
-
-              {/* BIRTH DATE */}
-              <div>
-                <label
-                  className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider mb-2"
-                  style={{
-                    background: "linear-gradient(90deg,#f59e0b,#f97316)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  <Calendar size={12} style={{ color: "#f59e0b" }} />
-                  Birth Date
-                </label>
-                <div className="flex gap-2">
-                  {[
-                    { name: "day", placeholder: "DD" },
-                    { name: "month", placeholder: "MM" },
-                    { name: "year", placeholder: "YYYY" },
-                  ].map(function (field) {
-                    return (
-                      <input
-                        key={field.name}
-                        name={field.name}
-                        onChange={handleChange}
-                        placeholder={field.placeholder}
-                        className={smallInput}
-                        style={{ ...baseInputStyle, flex: 1 }}
-                        onFocus={focusInput}
-                        onBlur={blurInput}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* BIRTH TIME */}
-              <div>
-                <label
-                  className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider mb-2"
-                  style={{
-                    background: "linear-gradient(90deg,#3b82f6,#a855f7)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}
-                >
-                  <Clock size={12} style={{ color: "#3b82f6" }} />
-                  Birth Time
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    name="hour"
-                    onChange={handleChange}
-                    placeholder="HH"
-                    className={smallInput}
-                    style={{ ...baseInputStyle, flex: 1 }}
-                    onFocus={focusInput}
-                    onBlur={blurInput}
-                  />
-                  <input
-                    name="minute"
-                    onChange={handleChange}
-                    placeholder="MM"
-                    className={smallInput}
-                    style={{ ...baseInputStyle, flex: 1 }}
-                    onFocus={focusInput}
-                    onBlur={blurInput}
-                  />
-                  <select
-                    name="ampm"
-                    onChange={handleChange}
-                    className={smallInput}
-                    style={{ ...baseInputStyle, flex: 1, cursor: "pointer" }}
-                    onFocus={focusInput}
-                    onBlur={blurInput}
-                  >
-                    <option>AM</option>
-                    <option>PM</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* BIRTH PLACE */}
-            <div>
-              <label
-                className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider mb-2"
-                style={{
-                  background: "linear-gradient(90deg,#ec4899,#f97316)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                <MapPin size={12} style={{ color: "#ec4899" }} />
-                Birth Place
-              </label>
-              <input
-                name="place"
-                onChange={handleChange}
-                placeholder="Enter birth city"
-                className={baseInput}
-                style={{ ...baseInputStyle }}
-                onFocus={focusInput}
-                onBlur={blurInput}
-              />
-            </div>
-
-            {/* Info pills */}
-            <div className="flex flex-wrap gap-2">
-              {[
-                { icon: "🔮", text: "Vedic Calculation" },
-                { icon: "⚡", text: "Instant Result" },
-                { icon: "🔒", text: "100% Private" },
-                { icon: "✨", text: "Free Forever" },
-              ].map(function (pill, i) {
-                return (
-                  <span
-                    key={i}
-                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
-                    style={{
-                      background:
-                        "linear-gradient(135deg,rgba(168,85,247,0.08),rgba(236,72,153,0.08))",
-                      border: "1px solid rgba(168,85,247,0.15)",
-                      color: "#7c3aed",
-                    }}
-                  >
-                    {pill.icon} {pill.text}
-                  </span>
-                );
-              })}
-            </div>
-
-            {/* SUBMIT BUTTON */}
-            <motion.button
-              type="button"
-              onClick={handleSubmit}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              className="w-full py-4 rounded-2xl font-black text-lg text-white border-0 flex items-center justify-center gap-3"
-              style={{
-                background:
-                  "linear-gradient(90deg,#7c3aed,#a855f7,#ec4899)",
-                boxShadow: "0 6px 24px rgba(124,58,237,0.4)",
-              }}
-              onMouseEnter={function (e) {
-                e.currentTarget.style.boxShadow =
-                  "0 8px 32px rgba(124,58,237,0.55)";
-              }}
-              onMouseLeave={function (e) {
-                e.currentTarget.style.boxShadow =
-                  "0 6px 24px rgba(124,58,237,0.4)";
-              }}
-            >
-              <Zap size={20} />
-              Generate Janam Kundli
-              <span className="text-2xl">🔮</span>
-            </motion.button>
-          </form>
-        </motion.div>
-
-        {/* Bottom trust badges */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="flex justify-center flex-wrap gap-6 mt-8"
-        >
-          {[
-            { emoji: "👥", label: "5 Crore+ Users" },
-            { emoji: "⭐", label: "4.8 Rating" },
-            { emoji: "🛡️", label: "100% Secure" },
-          ].map(function (badge, i) {
-            return (
-              <div
+          <div className="grid sm:grid-cols-3 gap-5">
+            {features.map((f, i) => (
+              <motion.div
                 key={i}
-                className="flex items-center gap-2 text-sm font-semibold"
-                style={{ color: "#6b7280" }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -10, scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="card group cursor-pointer relative overflow-hidden"
               >
-                <span className="text-lg">{badge.emoji}</span>
-                {badge.label}
-              </div>
-            );
-          })}
-        </motion.div>
-      </div>
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-[1.5rem]"
+                  style={{ background: "radial-gradient(circle at 50% 0%, rgba(255,98,0,0.07) 0%, transparent 68%)" }}
+                />
+                <motion.div
+                  whileHover={{ rotate: 13, scale: 1.22 }}
+                  transition={{ type: "spring", stiffness: 320 }}
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5 text-xl"
+                  style={{
+                    background: "var(--accent-bg)",
+                    border: "1px solid var(--accent-border)",
+                  }}
+                >
+                  {f.icon}
+                </motion.div>
+                <h3 className="font-bold text-base mb-2 text-[var(--text-heading)]" style={{ fontFamily: "Poppins, sans-serif" }}>
+                  {f.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-[var(--text-muted)]">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
     </motion.div>
   );
 };

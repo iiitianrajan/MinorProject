@@ -1,728 +1,560 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  X,
-  Mail,
-  Phone,
-  LogOut,
-  Wallet,
-  Calendar,
-  MapPin,
-  User,
-  ShieldCheck,
-  Star,
-  Sparkles
+  X, Mail, Phone, LogOut, Wallet, Calendar, MapPin, User,
+  ShieldCheck, Star, Sparkles, Settings, Bell, Globe, LifeBuoy,
+  ChevronRight, ArrowRight, Sun, Moon, Zap, Clock, MoreHorizontal,
+  TrendingUp, Package
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
+/* ─── Section Label (matches Home.jsx) ─── */
+const SLabel = ({ children }) => (
+  <p
+    className="text-[10px] font-bold uppercase tracking-[0.18em] mb-1"
+    style={{ color: 'var(--primary)' }}
+  >
+    {children}
+  </p>
+);
+
+/* ─── Nav Item ─── */
+const NavItem = ({ icon: Icon, label, active, onClick }) => (
+  <motion.button
+    whileHover={{ x: 4 }}
+    whileTap={{ scale: 0.97 }}
+    onClick={onClick}
+    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all border-0 text-left"
+    style={
+      active
+        ? { background: 'var(--accent-bg)', color: 'var(--primary)', fontWeight: 700 }
+        : { background: 'transparent', color: 'var(--text-muted)' }
+    }
+  >
+    <Icon size={15} style={{ color: active ? 'var(--primary)' : 'var(--text-soft)' }} />
+    {label}
+  </motion.button>
+);
+
+/* ─── Birth Chart Sign Card ─── */
+const SignCard = ({ label, sign, desc, icon }) => (
+  <motion.div
+    whileHover={{ y: -5, scale: 1.02 }}
+    whileTap={{ scale: 0.97 }}
+    className="card flex-1 cursor-pointer"
+    style={{ minWidth: 0 }}
+  >
+    <div
+      className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+      style={{ background: 'var(--accent-bg)', border: '1px solid var(--accent-border)' }}
+    >
+      <span className="text-lg">{icon}</span>
+    </div>
+    <p className="text-[9px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-soft)' }}>
+      {label}
+    </p>
+    <h4 className="font-bold text-base mb-1.5" style={{ color: 'var(--text-heading)' }}>{sign}</h4>
+    <p className="text-xs leading-relaxed line-clamp-3" style={{ color: 'var(--text-muted)' }}>{desc}</p>
+  </motion.div>
+);
+
+/* ─── Order Row ─── */
+const OrderRow = ({ name, orderId, date, price, status, image }) => (
+  <motion.div
+    whileHover={{ x: 3 }}
+    className="flex items-center gap-4 py-4 cursor-pointer"
+    style={{ borderBottom: '1px solid var(--border-soft)' }}
+  >
+    <div
+      className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+      style={{ background: 'var(--bg-soft)' }}
+    >
+      {image || '🔮'}
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-heading)' }}>{name}</p>
+      <p className="text-xs" style={{ color: 'var(--text-soft)' }}>{orderId} · {date}</p>
+    </div>
+    <div className="flex items-center gap-3 flex-shrink-0">
+      <div className="text-right">
+        <p className="text-sm font-bold" style={{ color: 'var(--text-heading)' }}>₹{price}</p>
+        <p
+          className="text-[10px] font-semibold uppercase tracking-wider"
+          style={{ color: status === 'Delivered' ? '#16a34a' : 'var(--primary)' }}
+        >
+          {status}
+        </p>
+      </div>
+      <ChevronRight size={14} style={{ color: 'var(--text-soft)' }} />
+    </div>
+  </motion.div>
+);
+
+/* ─── Main Component ─── */
 const ProfileModal = ({ isOpen, onClose }) => {
   const { currentUser, logout } = useAuth();
+  const [activeNav, setActiveNav] = useState('Profile Dashboard');
+  const [activeTab, setActiveTab] = useState('AstroMall Orders');
 
   if (!isOpen) return null;
 
+  const navItems = [
+    { icon: User, label: 'Profile Dashboard' },
+    { icon: Settings, label: 'Account Settings' },
+    { icon: Bell, label: 'Notifications' },
+    { icon: Globe, label: 'Language' },
+    { icon: LifeBuoy, label: 'Support' },
+  ];
+
+  const birthSigns = [
+    { label: 'Sun Sign', sign: 'Leo', icon: '☀️', desc: 'Radiant, creative, and ruled by the sun. Your core essence glows with confidence.' },
+    { label: 'Moon Sign', sign: 'Pisces', icon: '🌙', desc: 'Deeply intuitive, empathetic, and spiritual. Your emotional world is vast as the sea.' },
+    { label: 'Rising Sign', sign: 'Scorpio', icon: '↗', desc: 'Mysterious, intense, and transformative. The mask you wear is powerful and magnetic.' },
+  ];
+
+  const tabs = ['AstroMall Orders', 'Daily Readings', 'Past Sessions'];
+
+  const orders = [
+    { name: 'Midnight Obsidian Ritual Kit', orderId: 'Order #CP-62913', date: 'Delivered Oct 12', price: '45.00', status: 'Delivered', image: '🌑' },
+    { name: 'Digital 12-Month Transit Forecast', orderId: 'Order #CP-51725', date: 'Delivered Sep 29', price: '29.99', status: 'Success', image: '📊' },
+  ];
+
   return (
     <AnimatePresence>
-      <>
-        <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
-
-          /* ── Overlay ── */
-          .pm-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            background: rgba(10, 5, 0, 0.78);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-          }
-
-          /* ── Card ── */
-          .pm-card {
-            position: relative;
-            width: 100%;
-            max-width: 420px;
-            max-height: 92vh;
-            overflow-y: auto;
-            border-radius: 28px;
-            padding: 0 0 24px 0;
-            font-family: 'DM Sans', sans-serif;
-
-            background: linear-gradient(
-              170deg,
-              rgba(28, 12, 2, 0.97) 0%,
-              rgba(40, 18, 5, 0.97) 40%,
-              rgba(20, 8, 30, 0.97) 100%
-            );
-            backdrop-filter: blur(32px);
-            -webkit-backdrop-filter: blur(32px);
-            border: 1px solid rgba(255, 160, 40, 0.22);
-            box-shadow:
-              0 0 0 1px rgba(255, 200, 80, 0.06) inset,
-              0 32px 80px rgba(0, 0, 0, 0.75),
-              0 0 60px rgba(255, 120, 20, 0.14),
-              0 0 120px rgba(220, 80, 0, 0.08);
-
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 140, 30, 0.3) transparent;
-          }
-          .pm-card::-webkit-scrollbar { width: 4px; }
-          .pm-card::-webkit-scrollbar-track { background: transparent; }
-          .pm-card::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, rgba(255,140,30,0.5), rgba(255,60,100,0.3));
-            border-radius: 4px;
-          }
-
-          /* ── Hero banner at top ── */
-          .pm-hero {
-            position: relative;
-            width: 100%;
-            height: 110px;
-            border-radius: 28px 28px 0 0;
-            overflow: hidden;
-            background: linear-gradient(
-              135deg,
-              #ff6a00 0%,
-              #ee0979 40%,
-              #7c1fa8 75%,
-              #1a0536 100%
-            );
-          }
-
-          .pm-hero-stars {
-            position: absolute;
-            inset: 0;
-            background-image:
-              radial-gradient(circle, rgba(255,255,200,0.9) 1px, transparent 1px),
-              radial-gradient(circle, rgba(255,255,200,0.6) 1px, transparent 1px),
-              radial-gradient(circle, rgba(255,255,200,0.4) 1px, transparent 1px);
-            background-size: 60px 60px, 90px 90px, 130px 130px;
-            background-position: 10px 10px, 45px 30px, 80px 15px;
-            animation: twinkle 4s ease-in-out infinite alternate;
-          }
-          @keyframes twinkle {
-            0%   { opacity: 0.6; }
-            100% { opacity: 1; }
-          }
-
-          .pm-hero-mandala {
-            position: absolute;
-            right: -20px;
-            top: -20px;
-            width: 130px;
-            height: 130px;
-            opacity: 0.15;
-            border: 2px solid rgba(255,220,100,0.8);
-            border-radius: 50%;
-            box-shadow:
-              0 0 0 12px rgba(255,180,50,0.08),
-              0 0 0 26px rgba(255,140,30,0.05),
-              0 0 0 44px rgba(255,100,20,0.03);
-            animation: rotateSlow 20s linear infinite;
-          }
-          @keyframes rotateSlow {
-            from { transform: rotate(0deg); }
-            to   { transform: rotate(360deg); }
-          }
-
-          .pm-hero-mandala::before {
-            content: '';
-            position: absolute;
-            inset: 8px;
-            border: 1px dashed rgba(255,220,100,0.5);
-            border-radius: 50%;
-          }
-          .pm-hero-mandala::after {
-            content: '';
-            position: absolute;
-            inset: 18px;
-            border: 1px solid rgba(255,200,80,0.3);
-            border-radius: 50%;
-          }
-
-          /* Ambient blobs */
-          .pm-blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(55px);
-            pointer-events: none;
-            z-index: 0;
-          }
-          .pm-blob-1 {
-            width: 200px; height: 200px;
-            background: rgba(255, 120, 20, 0.13);
-            top: 60px; right: -60px;
-          }
-          .pm-blob-2 {
-            width: 150px; height: 150px;
-            background: rgba(220, 30, 100, 0.1);
-            bottom: 60px; left: -50px;
-          }
-          .pm-blob-3 {
-            width: 120px; height: 120px;
-            background: rgba(140, 30, 200, 0.08);
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-          }
-
-          /* ── Close btn ── */
-          .pm-close {
-            position: absolute;
-            top: 14px; right: 14px;
-            z-index: 10;
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(0,0,0,0.35);
-            color: rgba(255,255,255,0.7);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(8px);
-          }
-          .pm-close:hover {
-            background: rgba(220, 30, 60, 0.35);
-            border-color: rgba(255, 80, 80, 0.5);
-            color: #fff;
-            transform: scale(1.1) rotate(90deg);
-          }
-
-          /* ── Inner content ── */
-          .pm-inner {
-            position: relative;
-            z-index: 2;
-            padding: 0 22px;
-          }
-
-          /* ── Avatar section ── */
-          .pm-avatar-wrap {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: -44px;
-            margin-bottom: 22px;
-          }
-
-          .pm-avatar-ring {
-            position: relative;
-            width: 88px; height: 88px;
-            border-radius: 50%;
-            padding: 3px;
-            background: linear-gradient(135deg, #ff9500, #ff3c78, #9b2dca);
-            box-shadow:
-              0 0 24px rgba(255, 130, 20, 0.55),
-              0 0 50px rgba(255, 60, 100, 0.25),
-              0 8px 32px rgba(0,0,0,0.5);
-            animation: ringPulse 3.5s ease-in-out infinite;
-          }
-          @keyframes ringPulse {
-            0%,100% { box-shadow: 0 0 20px rgba(255,130,20,0.5), 0 0 44px rgba(255,60,100,0.2), 0 8px 32px rgba(0,0,0,0.5); }
-            50%      { box-shadow: 0 0 32px rgba(255,60,100,0.55), 0 0 64px rgba(255,130,20,0.25), 0 8px 32px rgba(0,0,0,0.5); }
-          }
-
-          .pm-avatar-img {
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            display: block;
-            background: linear-gradient(135deg, #3a0010, #7c1020);
-          }
-
-          .pm-avatar-fallback {
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #4a1500, #c44a00, #8b1a4a);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.9rem;
-            font-weight: 700;
-            color: #fff;
-            font-family: 'Playfair Display', serif;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-          }
-
-          .pm-verified-badge {
-            position: absolute;
-            bottom: 2px; right: 2px;
-            width: 24px; height: 24px;
-            background: linear-gradient(135deg, #ff9500, #ff5e00);
-            border-radius: 50%;
-            border: 2px solid rgba(28,12,2,0.95);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 10px rgba(255,140,20,0.7);
-          }
-
-          .pm-name {
-            margin-top: 14px;
-            font-family: 'Playfair Display', serif;
-            font-size: 1.18rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            background: linear-gradient(90deg, #fff5e0 0%, #ffd080 45%, #ff8c40 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-align: center;
-          }
-
-          .pm-role-badge {
-            margin-top: 7px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.62rem;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            padding: 4px 14px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, rgba(255,140,20,0.18), rgba(220,50,80,0.14));
-            border: 1px solid rgba(255,160,40,0.3);
-            color: rgba(255, 210, 130, 0.85);
-            font-weight: 600;
-          }
-
-          /* ── Zodiac strip ── */
-          .pm-zodiac-strip {
-            display: flex;
-            gap: 6px;
-            justify-content: center;
-            margin-top: 10px;
-            margin-bottom: 2px;
-          }
-          .pm-zodiac-dot {
-            width: 5px; height: 5px;
-            border-radius: 50%;
-            background: rgba(255,180,60,0.35);
-          }
-          .pm-zodiac-dot.active {
-            background: rgba(255,150,30,0.85);
-            box-shadow: 0 0 5px rgba(255,140,20,0.6);
-          }
-
-          /* ── Wallet card ── */
-          .pm-wallet {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 15px 18px;
-            border-radius: 18px;
-            margin-bottom: 14px;
-            background: linear-gradient(
-              135deg,
-              rgba(255, 160, 20, 0.15) 0%,
-              rgba(220, 60, 0, 0.12) 100%
-            );
-            border: 1px solid rgba(255, 150, 30, 0.28);
-            box-shadow:
-              0 0 24px rgba(255, 130, 20, 0.1),
-              inset 0 1px 0 rgba(255, 220, 100, 0.08);
-            position: relative;
-            overflow: hidden;
-          }
-
-          .pm-wallet::before {
-            content: '₹';
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 4rem;
-            font-family: 'Playfair Display', serif;
-            color: rgba(255,160,30,0.05);
-            pointer-events: none;
-            line-height: 1;
-          }
-
-          .pm-wallet-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #ffb040;
-          }
-
-          .pm-wallet-icon-wrap {
-            width: 36px; height: 36px;
-            border-radius: 10px;
-            background: rgba(255,140,20,0.18);
-            border: 1px solid rgba(255,160,40,0.25);
-            display: flex; align-items: center; justify-content: center;
-          }
-
-          .pm-wallet-texts { display: flex; flex-direction: column; gap: 1px; }
-
-          .pm-wallet-label {
-            font-size: 0.72rem;
-            font-weight: 500;
-            letter-spacing: 0.05em;
-            color: rgba(255, 190, 80, 0.7);
-            text-transform: uppercase;
-          }
-
-          .pm-wallet-amount {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.25rem;
-            font-weight: 700;
-            background: linear-gradient(90deg, #ffe066, #ff9030);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          }
-
-          .pm-recharge-btn {
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            padding: 6px 14px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,140,30,0.45);
-            background: rgba(255,120,20,0.12);
-            color: rgba(255,200,80,0.9);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'DM Sans', sans-serif;
-          }
-          .pm-recharge-btn:hover {
-            background: rgba(255,120,20,0.25);
-            border-color: rgba(255,160,40,0.7);
-            box-shadow: 0 0 12px rgba(255,130,20,0.25);
-            color: #fff;
-          }
-
-          /* ── Section label ── */
-          .pm-section-label {
-            font-size: 0.65rem;
-            font-weight: 600;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: rgba(255, 160, 60, 0.55);
-            margin-bottom: 8px;
-            margin-left: 4px;
-          }
-
-          /* ── Info rows ── */
-          .pm-info-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 11px 14px;
-            border-radius: 14px;
-            margin-bottom: 7px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 160, 40, 0.1);
-            transition: background 0.2s ease, border-color 0.2s ease;
-          }
-          .pm-info-row:hover {
-            background: rgba(255, 120, 20, 0.09);
-            border-color: rgba(255, 150, 40, 0.25);
-          }
-
-          .pm-info-icon {
-            color: #ff9040;
-            flex-shrink: 0;
-            opacity: 0.8;
-          }
-
-          .pm-info-content { display: flex; flex-direction: column; gap: 1px; }
-
-          .pm-info-label {
-            font-size: 0.62rem;
-            font-weight: 500;
-            letter-spacing: 0.07em;
-            text-transform: uppercase;
-            color: rgba(255, 160, 60, 0.5);
-          }
-
-          .pm-info-text {
-            font-size: 0.83rem;
-            color: rgba(255, 240, 210, 0.78);
-            font-weight: 400;
-          }
-
-          /* ── Divider ── */
-          .pm-divider {
-            height: 1px;
-            margin: 18px 0;
-            background: linear-gradient(90deg,
-              transparent 0%,
-              rgba(255, 140, 30, 0.3) 25%,
-              rgba(255, 60, 80, 0.25) 75%,
-              transparent 100%
-            );
-            position: relative;
-          }
-          .pm-divider::after {
-            content: '✦';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 0.6rem;
-            color: rgba(255,160,40,0.5);
-            background: rgba(28,12,2,0.97);
-            padding: 0 6px;
-          }
-
-          /* ── Action buttons ── */
-          .pm-actions { display: flex; flex-direction: column; gap: 10px; }
-
-          .pm-btn-edit {
-            width: 100%;
-            padding: 12px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 150, 40, 0.3);
-            background: rgba(255, 120, 20, 0.08);
-            color: rgba(255, 220, 150, 0.88);
-            font-size: 0.84rem;
-            font-weight: 600;
-            font-family: 'DM Sans', sans-serif;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            transition: all 0.22s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-          }
-          .pm-btn-edit:hover {
-            background: rgba(255, 130, 20, 0.16);
-            border-color: rgba(255, 160, 50, 0.55);
-            box-shadow: 0 0 18px rgba(255, 120, 20, 0.2);
-            color: #fff;
-          }
-
-          .pm-btn-logout {
-            width: 100%;
-            padding: 12px;
-            border-radius: 14px;
-            border: none;
-            background: linear-gradient(135deg, #ff6a00 0%, #ee0979 55%, #9b2dca 100%);
-            color: #fff;
-            font-size: 0.84rem;
-            font-weight: 600;
-            font-family: 'DM Sans', sans-serif;
-            letter-spacing: 0.05em;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.22s ease;
-            box-shadow: 0 4px 22px rgba(255,100,0,0.35);
-          }
-          .pm-btn-logout:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 28px rgba(238,9,121,0.45);
-            opacity: 0.92;
-          }
-          .pm-btn-logout:active { transform: scale(0.98); }
-
-          .pm-not-logged {
-            text-align: center;
-            color: rgba(255, 220, 150, 0.35);
-            font-size: 0.85rem;
-            padding: 24px 0;
-          }
-
-          /* ── Astro tagline at bottom ── */
-          .pm-tagline {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 18px;
-            font-size: 0.65rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            color: rgba(255, 180, 80, 0.3);
-            font-weight: 500;
-          }
-        `}</style>
-
-        {/* ── Overlay ── */}
-        <div className="pm-overlay" onClick={onClose}>
-
-          {/* ── Card ── */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(26,28,26,0.4)', backdropFilter: 'blur(12px)' }}
+          onClick={onClose}
+        >
           <motion.div
-            className="pm-card"
             onClick={(e) => e.stopPropagation()}
-            initial={{ opacity: 0, y: 50, scale: 0.93 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 35, scale: 0.94 }}
-            transition={{ type: "spring", stiffness: 300, damping: 26 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 12 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+            className="w-full overflow-hidden"
+            style={{
+              maxWidth: 860,
+              maxHeight: '92vh',
+              background: 'var(--bg)',
+              borderRadius: '2rem',
+              boxShadow: 'var(--shadow-lg)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
           >
-            {/* Ambient blobs */}
-            <div className="pm-blob pm-blob-1" />
-            <div className="pm-blob pm-blob-2" />
-            <div className="pm-blob pm-blob-3" />
+            {/* ─── Header Card ─── */}
+            <div
+              className="flex-shrink-0 relative"
+              style={{
+                background: 'var(--bg-elevated)',
+                borderBottom: '1px solid var(--border-soft)',
+              }}
+            >
+              {/* Ambient glow */}
+              <motion.div
+                animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }}
+                transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+                className="absolute top-0 right-0 w-64 h-32 pointer-events-none"
+                style={{
+                  background: 'radial-gradient(circle, rgba(255,98,0,0.08) 0%, transparent 70%)',
+                  filter: 'blur(40px)',
+                }}
+              />
 
-            {/* ── Hero banner ── */}
-            <div className="pm-hero">
-              <div className="pm-hero-stars" />
-              <div className="pm-hero-mandala" />
+              <div className="flex items-center justify-between p-6">
+                {/* Avatar + Name */}
+                <div className="flex items-center gap-4">
+                  {/* Avatar ring */}
+                  <div className="relative">
+                    <div
+                      className="w-16 h-16 rounded-full p-0.5"
+                      style={{ background: 'var(--gradient-primary)' }}
+                    >
+                      <div
+                        className="w-full h-full rounded-full flex items-center justify-center text-2xl font-bold text-white overflow-hidden"
+                        style={{ background: 'var(--bg-soft)' }}
+                      >
+                        {currentUser?.profilePicture ? (
+                          <img
+                            src={currentUser.profilePicture}
+                            alt="profile"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span style={{ color: 'var(--primary)', background: 'var(--accent-bg)', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {currentUser?.name?.charAt(0) || 'U'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {currentUser?.isVerified && (
+                      <div
+                        className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center"
+                        style={{ background: 'var(--gradient-primary)', border: '2px solid var(--bg-elevated)' }}
+                      >
+                        <ShieldCheck size={10} color="#fff" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    {/* Premium badge */}
+                    <div
+                      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest mb-1"
+                      style={{ background: 'var(--accent-bg)', color: 'var(--primary)', border: '1px solid var(--accent-border)' }}
+                    >
+                      <Sparkles size={8} /> Premium Member
+                    </div>
+                    <h2
+                      className="text-xl font-bold leading-tight"
+                      style={{ color: 'var(--text-heading)' }}
+                    >
+                      {currentUser?.name || 'Guest User'}
+                    </h2>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <Zap size={10} style={{ color: 'var(--primary)' }} />
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                        {currentUser?.role === 'admin' ? 'Admin' : 'Starseed & Seeker'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Wallet + Close */}
+                <div className="flex items-center gap-4">
+                  {/* Wallet balance */}
+                  <div
+                    className="card-soft flex flex-col items-end"
+                    style={{ padding: '0.75rem 1rem', borderRadius: '1rem' }}
+                  >
+                    <p className="text-[9px] font-bold uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-soft)' }}>
+                      Celestial Balance
+                    </p>
+                    <p className="text-2xl font-bold leading-none" style={{ color: 'var(--text-heading)' }}>
+                      ₹<span style={{
+                        background: 'var(--gradient-primary)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                      }}>
+                        {currentUser?.walletBalance || 0}
+                      </span>
+                    </p>
+                    <p className="text-[9px] mt-0.5" style={{ color: 'var(--text-soft)' }}>Stardust Credits</p>
+                    <motion.button
+                      whileHover={{ scale: 1.04, y: -1 }}
+                      whileTap={{ scale: 0.96 }}
+                      className="btn-primary mt-2 text-xs"
+                      style={{ padding: '0.35rem 1rem', borderRadius: '9999px' }}
+                    >
+                      Top Up Balance
+                    </motion.button>
+                  </div>
+
+                  {/* Close */}
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={onClose}
+                    className="w-8 h-8 rounded-full flex items-center justify-center border-0 flex-shrink-0"
+                    style={{ background: 'var(--bg-soft)', color: 'var(--text-muted)' }}
+                  >
+                    <X size={14} />
+                  </motion.button>
+                </div>
+              </div>
             </div>
 
-            {/* Close */}
-            <button className="pm-close" onClick={onClose}>
-              <X size={15} />
-            </button>
+            {/* ─── Body ─── */}
+            <div
+              className="flex flex-1 overflow-hidden"
+              style={{ minHeight: 0 }}
+            >
+              {/* ── Left sidebar ── */}
+              <div
+                className="hidden md:flex flex-col w-48 flex-shrink-0 overflow-y-auto p-4 gap-1"
+                style={{
+                  background: 'var(--bg-elevated)',
+                  borderRight: '1px solid var(--border-soft)',
+                }}
+              >
+                <p className="text-[9px] font-bold uppercase tracking-widest px-3 mb-2 mt-1" style={{ color: 'var(--text-soft)' }}>
+                  Management
+                </p>
+                {navItems.map((item) => (
+                  <NavItem
+                    key={item.label}
+                    icon={item.icon}
+                    label={item.label}
+                    active={activeNav === item.label}
+                    onClick={() => setActiveNav(item.label)}
+                  />
+                ))}
 
-            {/* ── Inner content ── */}
-            <div className="pm-inner">
-
-              {/* Avatar + Name */}
-              <div className="pm-avatar-wrap">
-                <div className="pm-avatar-ring">
-                  {currentUser?.profilePicture ? (
-                    <img
-                      src={currentUser.profilePicture}
-                      alt="profile"
-                      className="pm-avatar-img"
-                    />
-                  ) : (
-                    <div className="pm-avatar-fallback">
-                      {currentUser?.name?.charAt(0) || "U"}
-                    </div>
-                  )}
-
-                  {currentUser?.isVerified && (
-                    <div className="pm-verified-badge">
-                      <ShieldCheck size={12} color="#fff" />
-                    </div>
-                  )}
-                </div>
-
-                <div className="pm-name">
-                  {currentUser?.name || "Guest"}
-                </div>
-
-                <span className="pm-role-badge">
-                  <Star size={9} fill="currentColor" />
-                  {currentUser?.role || "user"}
-                </span>
-
-                {/* Decorative zodiac dots */}
-                <div className="pm-zodiac-strip">
-                  {[...Array(7)].map((_, i) => (
+                {/* Upgrade CTA */}
+                <div className="mt-auto pt-4">
+                  <motion.div
+                    whileHover={{ y: -3 }}
+                    className="card-soft cursor-pointer relative overflow-hidden"
+                    style={{ padding: '1rem', borderRadius: '1rem' }}
+                  >
                     <div
-                      key={i}
-                      className={`pm-zodiac-dot${i === 3 ? " active" : ""}`}
+                      className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                      style={{ background: 'radial-gradient(circle at 50% 0%, rgba(255,98,0,0.06) 0%, transparent 70%)' }}
                     />
-                  ))}
-                </div>
-              </div>
-
-              {/* Wallet */}
-              <div className="pm-wallet">
-                <div className="pm-wallet-left">
-                  <div className="pm-wallet-icon-wrap">
-                    <Wallet size={17} color="#ffaa30" />
-                  </div>
-                  <div className="pm-wallet-texts">
-                    <span className="pm-wallet-label">Wallet Balance</span>
-                    <span className="pm-wallet-amount">
-                      ₹{currentUser?.walletBalance || 0}
-                    </span>
-                  </div>
-                </div>
-                <button className="pm-recharge-btn">+ Recharge</button>
-              </div>
-
-              {/* Info rows */}
-              {currentUser ? (
-                <>
-                  <div className="pm-section-label">Account Details</div>
-
-                  <div className="pm-info-row">
-                    <Mail size={16} className="pm-info-icon" />
-                    <div className="pm-info-content">
-                      <span className="pm-info-label">Email</span>
-                      <span className="pm-info-text">
-                        {currentUser.email || "Not provided"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pm-info-row">
-                    <Phone size={16} className="pm-info-icon" />
-                    <div className="pm-info-content">
-                      <span className="pm-info-label">Phone</span>
-                      <span className="pm-info-text">
-                        {currentUser.phone || "Not provided"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pm-section-label" style={{ marginTop: '14px' }}>Birth Details</div>
-
-                  <div className="pm-info-row">
-                    <Calendar size={16} className="pm-info-icon" />
-                    <div className="pm-info-content">
-                      <span className="pm-info-label">Date of Birth</span>
-                      <span className="pm-info-text">
-                        {currentUser.dateOfBirth
-                          ? new Date(currentUser.dateOfBirth).toLocaleDateString()
-                          : "Not set"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pm-info-row">
-                    <User size={16} className="pm-info-icon" />
-                    <div className="pm-info-content">
-                      <span className="pm-info-label">Time of Birth</span>
-                      <span className="pm-info-text">
-                        {currentUser.timeOfBirth || "Not set"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pm-info-row">
-                    <MapPin size={16} className="pm-info-icon" />
-                    <div className="pm-info-content">
-                      <span className="pm-info-label">Place of Birth</span>
-                      <span className="pm-info-text">
-                        {currentUser.placeOfBirth || "Not set"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="pm-divider" />
-
-                  {/* Actions */}
-                  <div className="pm-actions">
-                    <button className="pm-btn-edit">
-                      <Sparkles size={14} />
-                      Edit Profile
-                    </button>
-
-                    <button
-                      className="pm-btn-logout"
-                      onClick={() => { logout(); onClose(); }}
+                    <div
+                      className="w-8 h-8 rounded-xl flex items-center justify-center mb-2"
+                      style={{ background: 'var(--accent-bg)' }}
                     >
-                      <LogOut size={14} />
-                      Logout
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <p className="pm-not-logged">User not logged in</p>
-              )}
+                      <Star size={14} style={{ color: 'var(--primary)' }} />
+                    </div>
+                    <p className="text-xs font-bold mb-1" style={{ color: 'var(--text-heading)' }}>
+                      Upgrade to Cosmic Plus
+                    </p>
+                    <p className="text-[10px] leading-relaxed mb-2" style={{ color: 'var(--text-muted)' }}>
+                      Unlock unlimited birth chart comparisons and monthly tarot insights.
+                    </p>
+                    <motion.div
+                      whileHover={{ x: 3 }}
+                      className="flex items-center gap-1 text-[10px] font-semibold"
+                      style={{ color: 'var(--primary)' }}
+                    >
+                      Learn More <ArrowRight size={10} />
+                    </motion.div>
+                  </motion.div>
 
-              {/* Astro footer tagline */}
-              <div className="pm-tagline">
-                <Star size={8} fill="currentColor" />
-                Soul Telescope • Your Cosmic Guide
-                <Star size={8} fill="currentColor" />
+                  {/* Logout */}
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => { logout(); onClose(); }}
+                    className="w-full mt-3 btn-primary flex items-center justify-center gap-2 text-xs"
+                    style={{ padding: '0.6rem 1rem', borderRadius: '0.75rem' }}
+                  >
+                    <LogOut size={12} /> Logout
+                  </motion.button>
+                </div>
               </div>
 
+              {/* ── Main content ── */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-6" style={{ minWidth: 0 }}>
+
+                {/* ── Birth Chart ── */}
+                <section>
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <SLabel>Celestial Alignment</SLabel>
+                      <h3 className="text-xl font-bold" style={{ color: 'var(--text-heading)' }}>
+                        Your Birth Chart
+                      </h3>
+                    </div>
+                    <motion.button
+                      whileHover={{ x: 2 }}
+                      className="flex items-center gap-1 text-xs font-semibold border-0 bg-transparent"
+                      style={{ color: 'var(--primary)' }}
+                    >
+                      View Full Chart <ChevronRight size={12} />
+                    </motion.button>
+                  </div>
+
+                  <div className="flex gap-4">
+                    {birthSigns.map((s, i) => (
+                      <SignCard key={i} {...s} />
+                    ))}
+                  </div>
+                </section>
+
+                {/* ── Active Rituals ── */}
+                <section>
+                  <div className="mb-4">
+                    <SLabel>Upcoming Events</SLabel>
+                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-heading)' }}>
+                      Active Rituals
+                    </h3>
+                  </div>
+
+                  <motion.div
+                    whileHover={{ y: -4 }}
+                    className="card overflow-hidden flex flex-col sm:flex-row gap-0 cursor-pointer"
+                    style={{ padding: 0 }}
+                  >
+                    {/* Thumbnail */}
+                    <div
+                      className="sm:w-36 h-36 sm:h-auto flex-shrink-0 flex items-center justify-center text-4xl"
+                      style={{ background: 'var(--bg-soft)', borderRadius: '1.5rem 0 0 1.5rem' }}
+                    >
+                      🌌
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 p-5">
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
+                            style={{ background: 'var(--accent-bg)', color: 'var(--primary)', border: '1px solid var(--accent-border)' }}
+                          >
+                            1:1 Virtual Session
+                          </span>
+                          <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-soft)' }}>
+                            <Clock size={11} /> Oct 24, 2024
+                          </div>
+                        </div>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          className="w-7 h-7 rounded-full flex items-center justify-center border-0 flex-shrink-0"
+                          style={{ background: 'var(--bg-soft)', color: 'var(--text-muted)' }}
+                        >
+                          <MoreHorizontal size={13} />
+                        </motion.button>
+                      </div>
+
+                      <h4 className="text-lg font-bold mb-1.5" style={{ color: 'var(--text-heading)' }}>
+                        Solar Return Deep Dive
+                      </h4>
+                      <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-muted)' }}>
+                        Explore the themes for your upcoming birthday year. We'll track all your transits, solar house placements, and key planetary cycles.
+                      </p>
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-7 h-7 rounded-full flex items-center justify-center text-sm"
+                            style={{ background: 'var(--accent-bg)' }}
+                          >
+                            🔮
+                          </div>
+                          <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
+                            Master Astrologer
+                          </span>
+                        </div>
+                        <motion.button
+                          whileHover={{ scale: 1.04, y: -1 }}
+                          whileTap={{ scale: 0.96 }}
+                          className="btn-primary text-sm flex items-center gap-2"
+                          style={{ padding: '0.5rem 1.4rem' }}
+                        >
+                          <Zap size={13} /> Join Session
+                        </motion.button>
+                      </div>
+                    </div>
+                  </motion.div>
+                </section>
+
+                {/* ── Cosmic History ── */}
+                <section>
+                  <div className="mb-4">
+                    <SLabel>Your Journey</SLabel>
+                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-heading)' }}>
+                      Cosmic History
+                    </h3>
+                  </div>
+
+                  {/* Tabs */}
+                  <div
+                    className="flex gap-1 p-1 rounded-xl mb-5 w-fit"
+                    style={{ background: 'var(--bg-soft)' }}
+                  >
+                    {tabs.map((tab) => (
+                      <motion.button
+                        key={tab}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => setActiveTab(tab)}
+                        className="px-4 py-2 rounded-lg text-sm font-semibold transition-all border-0"
+                        style={
+                          activeTab === tab
+                            ? {
+                                background: 'var(--bg-elevated)',
+                                color: 'var(--primary)',
+                                boxShadow: 'var(--shadow-sm)',
+                              }
+                            : {
+                                background: 'transparent',
+                                color: 'var(--text-muted)',
+                              }
+                        }
+                      >
+                        {tab}
+                      </motion.button>
+                    ))}
+                  </div>
+
+                  {/* Orders list */}
+                  <div
+                    className="card"
+                    style={{ padding: '0.5rem 1.25rem 0.25rem' }}
+                  >
+                    {orders.map((order, i) => (
+                      <OrderRow key={i} {...order} />
+                    ))}
+                  </div>
+
+                  {/* Load more */}
+                  <motion.button
+                    whileHover={{ scale: 1.04, y: -1 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="w-full mt-4 py-3 rounded-xl text-sm font-semibold border-0 transition-all"
+                    style={{
+                      background: 'var(--bg-elevated)',
+                      color: 'var(--text-muted)',
+                      border: '1px solid var(--border-soft)',
+                    }}
+                  >
+                    Load More History
+                  </motion.button>
+                </section>
+
+                {/* ── Account Info (shown below on mobile) ── */}
+                <section className="md:hidden">
+                  <div className="mb-4">
+                    <SLabel>Account Details</SLabel>
+                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-heading)' }}>
+                      Your Information
+                    </h3>
+                  </div>
+                  <div className="space-y-3">
+                    {[
+                      { icon: Mail, label: 'Email', value: currentUser?.email || 'Not provided' },
+                      { icon: Phone, label: 'Phone', value: currentUser?.phone || 'Not provided' },
+                      { icon: Calendar, label: 'Date of Birth', value: currentUser?.dateOfBirth ? new Date(currentUser.dateOfBirth).toLocaleDateString() : 'Not set' },
+                      { icon: MapPin, label: 'Place of Birth', value: currentUser?.placeOfBirth || 'Not set' },
+                    ].map(({ icon: Icon, label, value }) => (
+                      <motion.div
+                        key={label}
+                        whileHover={{ x: 3 }}
+                        className="card-soft flex items-center gap-3"
+                        style={{ padding: '0.875rem 1rem', borderRadius: '1rem' }}
+                      >
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{ background: 'var(--accent-bg)' }}
+                        >
+                          <Icon size={14} style={{ color: 'var(--primary)' }} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-soft)' }}>{label}</p>
+                          <p className="text-sm font-medium" style={{ color: 'var(--text-heading)' }}>{value}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => { logout(); onClose(); }}
+                    className="w-full mt-4 btn-primary flex items-center justify-center gap-2"
+                  >
+                    <LogOut size={14} /> Logout
+                  </motion.button>
+                </section>
+
+              </div>
             </div>
           </motion.div>
-
         </div>
-      </>
+      )}
     </AnimatePresence>
   );
 };

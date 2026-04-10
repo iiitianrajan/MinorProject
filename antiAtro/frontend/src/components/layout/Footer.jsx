@@ -1,14 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Youtube, Sparkles, Star, Heart } from 'lucide-react';
-import Galaxy from '../../pages/Galaxy';
-import '../../pages/Galaxy.css'
+import { Facebook, Twitter, Instagram, Youtube, Sparkles, Star, Heart, ArrowRight, Shield, Phone, MessageSquare } from 'lucide-react';
 
 const socialLinks = [
-  { href: 'https://www.facebook.com/', icon: Facebook, color: '#3b82f6' },
-  { href: 'https://www.instagram.com/', icon: Instagram, color: '#ec4899' },
-  { href: 'https://www.twitter.com/', icon: Twitter, color: '#06b6d4' },
-  { href: 'https://www.youtube.com/', icon: Youtube, color: '#ef4444' },
+  { href: 'https://www.facebook.com/', icon: Facebook, label: 'Facebook' },
+  { href: 'https://www.instagram.com/', icon: Instagram, label: 'Instagram' },
+  { href: 'https://www.twitter.com/', icon: Twitter, label: 'Twitter' },
+  { href: 'https://www.youtube.com/', icon: Youtube, label: 'YouTube' },
 ];
 
 const astrologyServices = [
@@ -35,135 +33,170 @@ const importantLinks = [
   { name: 'Contact Us', path: '/contact' },
 ];
 
-const paymentMethods = [
-  { label: 'VISA', textColor: '#1a1a6e', fontStyle: 'italic' },
-  { label: 'MasterCard', textColor: '#7c0000', fontStyle: 'italic' },
-  { label: 'Paytm', textColor: '#00008B', fontStyle: 'normal' },
-  { label: 'Rupay', textColor: '#4466B1', fontStyle: 'normal' },
+const paymentMethods = ['VISA', 'MasterCard', 'Paytm', 'Rupay'];
+
+const trustBadges = [
+  { icon: Shield, label: '100% Secure' },
+  { icon: Star, label: '4.9 Rated' },
+  { icon: MessageSquare, label: '24/7 Support' },
 ];
 
-const glassCard = {
-  background: 'rgba(255,255,255,0.04)',
-  backdropFilter: 'blur(12px)',
-  border: '1px solid rgba(255,255,255,0.08)',
-};
-
-function GradientDot({ gradient }) {
-  return (
-    <span
-      style={{
-        display: 'inline-block',
-        width: 4,
-        height: 4,
-        borderRadius: '50%',
-        background: gradient,
-        flexShrink: 0,
-      }}
-    />
-  );
-}
-
-function GradientHeading({ gradient, iconColor, IconComponent, children }) {
+/* ─── Column Heading ─── */
+function ColHeading({ icon: Icon, children }) {
   return (
     <h4
-      className="font-bold mb-5 text-xs uppercase tracking-widest flex items-center gap-1"
-      style={{
-        background: gradient,
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-      }}
+      className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest mb-5"
+      style={{ color: 'var(--text-heading)', fontFamily: 'Poppins, sans-serif' }}
     >
-      <IconComponent size={13} style={{ color: iconColor, flexShrink: 0 }} />
+      <span
+        className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ background: 'var(--accent-bg)', border: '1px solid var(--accent-border)' }}
+      >
+        <Icon size={12} style={{ color: 'var(--primary-light)' }} />
+      </span>
       {children}
     </h4>
   );
 }
 
+/* ─── Footer Link ─── */
+function FooterLink({ to, children }) {
+  return (
+    <li>
+      <Link
+        to={to}
+        className="group flex items-center gap-2.5 text-sm py-0.5 transition-all duration-200"
+        style={{ color: 'var(--text-muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+        onMouseEnter={e => {
+          e.currentTarget.style.color = 'var(--primary-light)';
+          e.currentTarget.style.transform = 'translateX(4px)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.color = 'var(--text-muted)';
+          e.currentTarget.style.transform = 'translateX(0)';
+        }}
+      >
+        <span
+          className="w-1 h-1 rounded-full flex-shrink-0"
+          style={{ background: 'var(--primary-light)', opacity: 0.45 }}
+        />
+        {children}
+      </Link>
+    </li>
+  );
+}
+
 const Footer = () => {
-  function handleLinkEnter(e, gradient) {
-    e.currentTarget.style.background = gradient;
-    e.currentTarget.style.WebkitBackgroundClip = 'text';
-    e.currentTarget.style.WebkitTextFillColor = 'transparent';
-  }
-
-  function handleLinkLeave(e) {
-    e.currentTarget.style.background = 'none';
-    e.currentTarget.style.WebkitBackgroundClip = 'unset';
-    e.currentTarget.style.WebkitTextFillColor = 'unset';
-    e.currentTarget.style.color = '#9ca3af';
-  }
-
-  function handleSocialEnter(e, color) {
-    e.currentTarget.style.background = color;
-    e.currentTarget.style.color = '#fff';
-    e.currentTarget.style.boxShadow = '0 0 16px ' + color + '66';
-    e.currentTarget.style.borderColor = color;
-  }
-
-  function handleSocialLeave(e) {
-    e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
-    e.currentTarget.style.color = '#9ca3af';
-    e.currentTarget.style.boxShadow = 'none';
-    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)';
-  }
-
   return (
     <footer
-      className="relative text-white pt-16 pb-8 font-sans overflow-hidden"
-      style={{
-        background: 'linear-gradient(135deg, #0f0c29 0%, #1a1040 30%, #1A1A1A 60%, #0d0d1a 100%)',
-      }}
+      className="relative overflow-hidden"
+      style={{ background: 'var(--bg-soft)', borderTop: '1px solid var(--border-soft)' }}
     >
-      <div className="absolute inset-0">
-  <Galaxy />
-</div>
-     
-      {/* Ambient blobs */}
+      {/* Ambient tonal blobs — mirrors Home.jsx hero blobs */}
       <div
-        className="absolute top-0 left-0 w-96 h-96 rounded-full pointer-events-none"
+        className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)',
-          filter: 'blur(40px)',
+          background: 'radial-gradient(circle, rgba(255,98,0,0.07) 0%, transparent 70%)',
+          filter: 'blur(80px)',
           transform: 'translate(-30%, -30%)',
         }}
       />
       <div
-        className="absolute bottom-0 right-0 w-96 h-96 rounded-full pointer-events-none"
+        className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(251,146,60,0.15) 0%, transparent 70%)',
-          filter: 'blur(40px)',
+          background: 'radial-gradient(circle, rgba(255,140,58,0.06) 0%, transparent 70%)',
+          filter: 'blur(70px)',
           transform: 'translate(30%, 30%)',
         }}
       />
-      <div
-        className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(236,72,153,0.10) 0%, transparent 70%)',
-          filter: 'blur(50px)',
-          transform: 'translate(-50%, -50%)',
-        }}
-      />
 
-      {/* Top glow line */}
-      <div
-        className="absolute top-0 left-0 right-0 h-px"
-        style={{
-          background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.6), rgba(251,146,60,0.6), rgba(236,72,153,0.6), transparent)',
-        }}
-      />
+      {/* ── CTA Banner ── */}
+      <div style={{ borderBottom: '1px solid var(--border-soft)' }}>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div
+            className="rounded-2xl px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden"
+            style={{
+              background: 'var(--bg-elevated)',
+              boxShadow: 'var(--shadow-md)',
+              border: '1px solid var(--border-soft)',
+            }}
+          >
+            <div
+              className="absolute right-0 top-0 w-72 h-full pointer-events-none"
+              style={{
+                background: 'radial-gradient(ellipse at right, rgba(255,98,0,0.06) 0%, transparent 70%)',
+              }}
+            />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative z-10 text-center md:text-left">
+              <div
+                className="inline-flex items-center gap-2 rounded-full px-3 py-1 mb-3 text-xs font-semibold uppercase tracking-widest"
+                style={{
+                  background: 'var(--accent-bg)',
+                  border: '1px solid var(--accent-border)',
+                  color: 'var(--primary-light)',
+                }}
+              >
+                <Sparkles size={10} /> First Consultation Free
+              </div>
+              <h3
+                className="text-xl md:text-2xl font-bold mb-1"
+                style={{ color: 'var(--text-heading)', fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.03em' }}
+              >
+                Ready to discover your destiny?
+              </h3>
+              <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                Connect with India's top verified astrologers right now.
+              </p>
+            </div>
+
+            <div className="relative z-10 flex gap-3 flex-wrap justify-center">
+              <Link
+                to="/chat"
+                className="btn-primary flex items-center gap-2 text-sm"
+                style={{ textDecoration: 'none' }}
+              >
+                <MessageSquare size={15} /> Start Free Chat
+              </Link>
+              <Link
+                to="/call"
+                className="flex items-center gap-2 text-sm font-semibold px-5 py-3 rounded-full transition-all duration-300"
+                style={{
+                  background: 'var(--bg-soft)',
+                  border: '1px solid var(--border-soft)',
+                  color: 'var(--text-heading)',
+                  textDecoration: 'none',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--accent-bg)';
+                  e.currentTarget.style.borderColor = 'var(--accent-border)';
+                  e.currentTarget.style.color = 'var(--primary-light)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'var(--bg-soft)';
+                  e.currentTarget.style.borderColor = 'var(--border-soft)';
+                  e.currentTarget.style.color = 'var(--text-heading)';
+                }}
+              >
+                <Phone size={15} /> Talk to Expert
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Main Grid ── */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
 
-          {/* Brand Info */}
+          {/* Brand Column */}
           <div className="lg:col-span-2 space-y-6">
-            <Link to="/" className="flex items-center gap-3 group">
+            <Link to="/" className="flex items-center gap-3 group w-fit">
               <div
-                className="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-transform duration-300 group-hover:scale-110"
+                className="w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-transform duration-300 group-hover:scale-110 flex-shrink-0"
                 style={{
-                  background: 'linear-gradient(135deg, #FF9933 0%, #FFB800 50%, #f97316 100%)',
-                  boxShadow: '0 0 20px rgba(255,153,51,0.45), 0 0 40px rgba(255,153,51,0.2)',
+                  background: 'var(--gradient-primary)',
+                  boxShadow: '0 0 24px rgba(255,98,0,0.2)',
                 }}
               >
                 🕉️
@@ -172,24 +205,49 @@ const Footer = () => {
                 <span
                   className="text-2xl font-extrabold tracking-tight leading-none"
                   style={{
-                    background: 'linear-gradient(90deg, #fff 0%, #FF9933 40%, #ec4899 70%, #a855f7 100%)',
+                    background: 'var(--gradient-primary)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
+                    fontFamily: 'Poppins, sans-serif',
                   }}
                 >
                   SoulToConnect
                 </span>
-                <span className="text-[11px] text-gray-400 font-medium tracking-widest uppercase mt-0.5">
+                <span
+                  className="text-[11px] font-semibold tracking-widest uppercase mt-0.5"
+                  style={{ color: 'var(--text-soft)' }}
+                >
                   DivyaDarshan
                 </span>
               </div>
             </Link>
 
-            <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
-              India's premier astrology platform connecting you with verified Vedic astrologers, Tarot readers, and Numerologists for accurate future predictions. Over 5 Crore users trust us for guidance in love, career, and life.
+            <p className="text-sm leading-relaxed max-w-sm" style={{ color: 'var(--text-muted)' }}>
+              India's premier astrology platform connecting you with verified Vedic astrologers,
+              Tarot readers, and Numerologists. Over 5 Crore users trust us for guidance in
+              love, career, and life.
             </p>
 
+            {/* Trust badges — same pill style as Home's hero badge */}
+            <div className="flex gap-2 flex-wrap">
+              {trustBadges.map((b, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
+                  style={{
+                    background: 'var(--accent-bg)',
+                    border: '1px solid var(--accent-border)',
+                    color: 'var(--primary)',
+                  }}
+                >
+                  <b.icon size={11} style={{ color: 'var(--primary-light)' }} />
+                  {b.label}
+                </div>
+              ))}
+            </div>
+
+            {/* Social Icons */}
             <div className="flex gap-3">
               {socialLinks.map((item, i) => {
                 const IconComp = item.icon;
@@ -197,17 +255,28 @@ const Footer = () => {
                   <a
                     key={i}
                     href={item.href}
+                    aria-label={item.label}
                     className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
                     style={{
-                      background: 'rgba(255,255,255,0.07)',
-                      backdropFilter: 'blur(10px)',
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      color: '#9ca3af',
+                      background: 'var(--bg-elevated)',
+                      border: '1px solid var(--border-soft)',
+                      color: 'var(--text-soft)',
+                      boxShadow: 'var(--shadow-sm)',
                     }}
-                    onMouseEnter={e => handleSocialEnter(e, item.color)}
-                    onMouseLeave={handleSocialLeave}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'var(--gradient-primary)';
+                      e.currentTarget.style.color = '#fff';
+                      e.currentTarget.style.borderColor = 'transparent';
+                      e.currentTarget.style.boxShadow = '0 0 18px rgba(255,98,0,0.28)';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'var(--bg-elevated)';
+                      e.currentTarget.style.color = 'var(--text-soft)';
+                      e.currentTarget.style.borderColor = 'var(--border-soft)';
+                      e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                    }}
                   >
-                    <IconComp size={17} />
+                    <IconComp size={16} />
                   </a>
                 );
               })}
@@ -215,135 +284,133 @@ const Footer = () => {
           </div>
 
           {/* Astrology Services */}
-          <div className="rounded-2xl p-5" style={glassCard}>
-            <GradientHeading
-              gradient="linear-gradient(90deg, #f59e0b, #f97316)"
-              iconColor="#f59e0b"
-              IconComponent={Sparkles}
-            >
-              Astrology Services
-            </GradientHeading>
-            <ul className="space-y-2.5">
+          <div
+            className="rounded-2xl p-5 transition-all duration-300 hover:shadow-md"
+            style={{
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border-soft)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <ColHeading icon={Sparkles}>Astrology Services</ColHeading>
+            <ul className="space-y-2">
               {astrologyServices.map((link, idx) => (
-                <li key={idx}>
-                  <Link
-                    to={link.path}
-                    className="text-gray-400 text-sm transition-all duration-200 flex items-center gap-2"
-                    style={{ textDecoration: 'none' }}
-                    onMouseEnter={e => handleLinkEnter(e, 'linear-gradient(90deg,#f59e0b,#f97316,#ec4899)')}
-                    onMouseLeave={handleLinkLeave}
-                  >
-                    <GradientDot gradient="linear-gradient(90deg,#f59e0b,#ec4899)" />
-                    {link.name}
-                  </Link>
-                </li>
+                <FooterLink key={idx} to={link.path}>{link.name}</FooterLink>
               ))}
             </ul>
           </div>
 
-          {/* Horoscope 2026 */}
-          <div className="rounded-2xl p-5" style={glassCard}>
-            <GradientHeading
-              gradient="linear-gradient(90deg, #a855f7, #ec4899)"
-              iconColor="#a855f7"
-              IconComponent={Star}
-            >
-              Horoscope 2026
-            </GradientHeading>
-            <ul className="space-y-2.5">
+          {/* Horoscope */}
+          <div
+            className="rounded-2xl p-5 transition-all duration-300 hover:shadow-md"
+            style={{
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border-soft)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <ColHeading icon={Star}>Horoscope 2026</ColHeading>
+            <ul className="space-y-2">
               {horoscopes.map((zodiac, idx) => (
-                <li key={idx}>
-                  <Link
-                    to={'/horoscope/' + zodiac.toLowerCase().split(' ')[0]}
-                    className="text-gray-400 text-sm transition-all duration-200 flex items-center gap-2"
-                    style={{ textDecoration: 'none' }}
-                    onMouseEnter={e => handleLinkEnter(e, 'linear-gradient(90deg,#a855f7,#ec4899)')}
-                    onMouseLeave={handleLinkLeave}
-                  >
-                    <GradientDot gradient="linear-gradient(90deg,#a855f7,#ec4899)" />
-                    {zodiac}
-                  </Link>
-                </li>
+                <FooterLink key={idx} to={'/horoscope/' + zodiac.toLowerCase().split(' ')[0]}>
+                  {zodiac}
+                </FooterLink>
               ))}
             </ul>
           </div>
 
           {/* Important Links */}
-          <div className="rounded-2xl p-5" style={glassCard}>
-            <GradientHeading
-              gradient="linear-gradient(90deg, #f43f5e, #f97316)"
-              iconColor="#f43f5e"
-              IconComponent={Heart}
-            >
-              Important Links
-            </GradientHeading>
-            <ul className="space-y-2.5">
+          <div
+            className="rounded-2xl p-5 transition-all duration-300 hover:shadow-md"
+            style={{
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border-soft)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <ColHeading icon={Heart}>Important Links</ColHeading>
+            <ul className="space-y-2">
               {importantLinks.map((link, idx) => (
-                <li key={idx}>
-                  <Link
-                    to={link.path}
-                    className="text-gray-400 text-sm transition-all duration-200 flex items-center gap-2"
-                    style={{ textDecoration: 'none' }}
-                    onMouseEnter={e => handleLinkEnter(e, 'linear-gradient(90deg,#f43f5e,#f97316)')}
-                    onMouseLeave={handleLinkLeave}
-                  >
-                    <GradientDot gradient="linear-gradient(90deg,#f43f5e,#f97316)" />
-                    {link.name}
-                  </Link>
-                </li>
+                <FooterLink key={idx} to={link.path}>{link.name}</FooterLink>
               ))}
             </ul>
-          </div>
 
+            {/* Mini stats */}
+            <div
+              className="mt-6 pt-5 space-y-3"
+              style={{ borderTop: '1px solid var(--border-soft)' }}
+            >
+              {[
+                { emoji: '⭐', value: '4.9 / 5', label: 'App Rating' },
+                { emoji: '👥', value: '5 Crore+', label: 'Happy Users' },
+              ].map((s, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <span className="text-base leading-none">{s.emoji}</span>
+                  <div>
+                    <div
+                      className="text-sm font-bold leading-tight"
+                      style={{ color: 'var(--text-heading)', fontFamily: 'Poppins, sans-serif' }}
+                    >
+                      {s.value}
+                    </div>
+                    <div className="text-[11px]" style={{ color: 'var(--text-soft)' }}>
+                      {s.label}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Divider */}
-        <div
-          className="h-px mb-6"
-          style={{
-            background: 'linear-gradient(90deg, transparent, rgba(139,92,246,0.4), rgba(251,146,60,0.4), rgba(236,72,153,0.4), transparent)',
-          }}
-        />
+        <div className="h-px mb-8" style={{ background: 'var(--border-soft)' }} />
 
-        {/* Bottom bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex gap-3">
+        {/* Bottom Bar */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-5">
+
+          {/* Payment Methods */}
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            <span className="text-xs font-medium" style={{ color: 'var(--text-soft)' }}>
+              Secure Payments:
+            </span>
             {paymentMethods.map((pm, i) => (
               <div
                 key={i}
-                className="px-3 py-1.5 rounded text-xs font-bold transition-all duration-300 hover:scale-105"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold cursor-default transition-all duration-200 hover:scale-105"
                 style={{
-                  background: '#fff',
-                  color: pm.textColor,
-                  fontStyle: pm.fontStyle,
-                  opacity: 0.6,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                  cursor: 'default',
+                  background: 'var(--bg-elevated)',
+                  color: 'var(--text-heading)',
+                  border: '1px solid var(--border-soft)',
+                  boxShadow: 'var(--shadow-sm)',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.opacity = '1'; }}
-                onMouseLeave={e => { e.currentTarget.style.opacity = '0.6'; }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--accent-bg)';
+                  e.currentTarget.style.color = 'var(--primary)';
+                  e.currentTarget.style.borderColor = 'var(--accent-border)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'var(--bg-elevated)';
+                  e.currentTarget.style.color = 'var(--text-heading)';
+                  e.currentTarget.style.borderColor = 'var(--border-soft)';
+                }}
               >
-                {pm.label}
+                {pm}
               </div>
             ))}
           </div>
 
-          <div className="text-gray-500 text-xs text-center md:text-right leading-relaxed">
-            © 2026 SoulToConnect/DivyaDarshan. All rights reserved.
+          {/* Copyright */}
+          <p
+            className="text-xs text-center md:text-right leading-relaxed"
+            style={{ color: 'var(--text-soft)' }}
+          >
+            © 2026 SoulToConnect / DivyaDarshan. All rights reserved.
             <br />
             Made with ❤️ using React, Tailwind &amp; Framer Motion.
-          </div>
+          </p>
         </div>
       </div>
-
-      {/* Bottom glow line */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-px"
-        style={{
-          background: 'linear-gradient(90deg, transparent, rgba(236,72,153,0.5), rgba(251,146,60,0.5), transparent)',
-        }}
-      />
-     
     </footer>
   );
 };

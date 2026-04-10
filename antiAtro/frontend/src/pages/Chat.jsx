@@ -1,35 +1,237 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, Star, Sparkles, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Filter, Star, Sparkles, Zap, MessageSquare, X, SlidersHorizontal } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import ChatBox from './ChatBox';
 import AuthModal from '../components/auth/AuthModal';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
-const pageVariant = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -30 },
-};
+/* ─── Magnetic Button ─── */
+function MagneticBtn({ children, className, style, onClick }) {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { stiffness: 200, damping: 20 });
+  const sy = useSpring(y, { stiffness: 200, damping: 20 });
+  const onMove = (e) => {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    x.set((e.clientX - r.left - r.width / 2) * 0.28);
+    y.set((e.clientY - r.top - r.height / 2) * 0.28);
+  };
+  const onLeave = () => { x.set(0); y.set(0); };
+  return (
+    <motion.button
+      ref={ref}
+      style={{ ...style, x: sx, y: sy }}
+      className={className}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      onClick={onClick}
+      whileTap={{ scale: 0.95 }}
+    >
+      {children}
+    </motion.button>
+  );
+}
 
-const container = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.08 },
-  },
-};
+/* ─── Tilt Hook ─── */
+function useTilt() {
+  const ref = useRef(null);
+  const rotateX = useSpring(useMotionValue(0), { stiffness: 280, damping: 28 });
+  const rotateY = useSpring(useMotionValue(0), { stiffness: 280, damping: 28 });
+  const onMove = (e) => {
+    if (!ref.current) return;
+    const r = ref.current.getBoundingClientRect();
+    rotateY.set(((e.clientX - r.left) / r.width - 0.5) * 10);
+    rotateX.set(-((e.clientY - r.top) / r.height - 0.5) * 10);
+  };
+  const onLeave = () => { rotateX.set(0); rotateY.set(0); };
+  return { ref, rotateX, rotateY, onMove, onLeave };
+}
 
-const cardVariant = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
-  show: { opacity: 1, y: 0, scale: 1 },
-};
+/* ─── Astrologer Card ─── */
+function AstroCard({ astro, onCardClick, onChatClick }) {
+  const { ref, rotateX, rotateY, onMove, onLeave } = useTilt();
+  const [hovered, setHovered] = useState(false);
 
+  return (
+    <motion.div
+      ref={ref}
+      variants={{
+        hidden: { opacity: 0, y: 40, scale: 0.95 },
+        show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 160, damping: 18 } },
+      }}
+      style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
+      animate={hovered ? { y: -10 } : { y: 0 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      whileTap={{ scale: 0.97 }}
+      onMouseMove={onMove}
+      onMouseLeave={() => { onLeave(); setHovered(false); }}
+      onMouseEnter={() => setHovered(true)}
+      onClick={(e) => onCardClick(e, astro._id)}
+      className="card relative cursor-pointer overflow-hidden"
+    >
+      {/* Top accent bar on hover */}
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-[2px] gradient-primary rounded-t-[1.5rem]"
+        initial={{ scaleX: 0, originX: 0 }}
+        animate={{ scaleX: hovered ? 1 : 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+      />
+
+      {/* Hover glow overlay */}
+      <AnimatePresence>
+        {hovered && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="absolute inset-0 pointer-events-none rounded-[1.5rem]"
+            style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,98,0,0.07) 0%, transparent 65%)' }}
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="flex items-start gap-4 relative z-10">
+
+        {/* Avatar */}
+        <div className="relative flex-shrink-0">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="rounded-full p-[2px] gradient-primary"
+            style={{
+              boxShadow: hovered ? '0 0 18px rgba(255,98,0,0.32)' : '0 0 8px rgba(255,98,0,0.12)',
+              transition: 'box-shadow 0.3s ease',
+            }}
+          >
+            <div className="rounded-full p-[2px] bg-[var(--bg-elevated)]">
+              <img
+                src={astro.profileImage || `https://i.pravatar.cc/80?img=${(astro._id?.charCodeAt(0) % 10) + 1}`}
+                alt={astro.userId?.name}
+                className="w-14 h-14 rounded-full object-cover block"
+              />
+            </div>
+          </motion.div>
+
+          {astro.isOnline && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 300, delay: 0.2 }}
+              className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-[var(--bg-elevated)] bg-green-500"
+              style={{ boxShadow: '0 0 8px rgba(34,197,94,0.5)' }}
+            />
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="font-bold text-sm leading-tight truncate text-[var(--text-heading)]">
+              {astro.userId?.name || 'Astrologer'}
+            </h3>
+            <motion.div
+              whileHover={{ scale: 1.08 }}
+              className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 bg-[var(--accent-bg)] border border-[var(--accent-border)] text-[var(--primary)]"
+            >
+              <Star size={10} className="fill-yellow-400 text-yellow-400" />
+              {astro.rating?.toFixed(1) || '5.0'}
+            </motion.div>
+          </div>
+
+          <p className="text-xs font-semibold truncate mb-0.5 text-[var(--primary)]">
+            {astro.specialties?.join(' · ')}
+          </p>
+          <p className="text-xs truncate text-[var(--text-soft)]">
+            {astro.languages?.join(', ')}
+          </p>
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">
+            {astro.experienceYears} yrs exp
+          </p>
+
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <div>
+              <span className="text-base font-black text-[var(--primary)]">₹{astro.pricePerMinute}</span>
+              <span className="text-[11px] font-medium ml-0.5 text-[var(--text-soft)]">/min</span>
+            </div>
+            <MagneticBtn
+              onClick={(e) => onChatClick(e, astro.userId?.name)}
+              className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs cursor-pointer"
+            >
+              <Zap size={11} className="flex-shrink-0" />
+              Chat Now
+            </MagneticBtn>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom shimmer */}
+      <motion.div
+        className="absolute bottom-0 left-0 right-0 h-px pointer-events-none"
+        animate={{ opacity: hovered ? 1 : 0, scaleX: hovered ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+        style={{
+          background: 'linear-gradient(to right, transparent, rgba(255,98,0,0.2), transparent)',
+          originX: '50%',
+        }}
+      />
+    </motion.div>
+  );
+}
+
+/* ─── Skeleton Card ─── */
+function SkeletonCard() {
+  return (
+    <motion.div
+      animate={{ opacity: [0.4, 0.8, 0.4] }}
+      transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+      className="card"
+      style={{ height: 148 }}
+    >
+      <div className="flex gap-4">
+        <div className="w-14 h-14 rounded-full flex-shrink-0 bg-[var(--accent-bg)]" />
+        <div className="flex-1 flex flex-col gap-2.5 pt-1">
+          <div className="h-3 rounded-full w-2/3 bg-[var(--accent-bg)]" />
+          <div className="h-2.5 rounded-full w-1/2 bg-[var(--bg-soft)]" />
+          <div className="h-2.5 rounded-full w-3/4 bg-[var(--bg-soft)]" />
+          <div className="h-2 rounded-full w-1/3 mt-1 bg-[var(--bg-soft)]" />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Filter Tag ─── */
+function FilterTag({ label, active, index, onClick }) {
+  return (
+    <motion.button
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.04 }}
+      whileHover={{ scale: 1.06, y: -2 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer border ${
+        active
+          ? 'btn-primary border-transparent'
+          : 'bg-[var(--accent-bg)] text-[var(--primary)] border-[var(--accent-border)] hover:bg-[var(--bg-soft)]'
+      }`}
+    >
+      {label}
+    </motion.button>
+  );
+}
+
+/* ─── Main Component ─── */
 const Chat = () => {
   const { currentUser } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAstrologer, setSelectedAstrologer] = useState(null);
   const [astrologers, setAstrologers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('All');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,8 +240,8 @@ const Chat = () => {
         const res = await fetch('http://localhost:5001/api/astrologer');
         const data = await res.json();
         setAstrologers(data);
-      } catch (error) {
-        console.error('❌ Fetch error:', error);
+      } catch (err) {
+        console.error('❌ Fetch error:', err);
       } finally {
         setLoading(false);
       }
@@ -47,353 +249,250 @@ const Chat = () => {
     fetchAstrologers();
   }, []);
 
+  const filtered = astrologers.filter(a =>
+    !search ||
+    a.userId?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    a.specialties?.some(s => s.toLowerCase().includes(search.toLowerCase()))
+  );
+
   function handleCardClick(e, astroId) {
     e.stopPropagation();
-    if (currentUser) {
-      navigate('/astrologer/' + astroId);
-    } else {
-      setIsModalOpen(true);
-    }
+    if (currentUser) navigate('/astrologer/' + astroId);
+    else setIsModalOpen(true);
   }
 
   function handleChatClick(e, astroName) {
     e.stopPropagation();
-    if (currentUser) {
-      setSelectedAstrologer(astroName || 'Astrologer');
-    } else {
-      setIsModalOpen(true);
-    }
+    if (currentUser) setSelectedAstrologer(astroName || 'Astrologer');
+    else setIsModalOpen(true);
   }
+
+  const filterTags = ['All', 'Online Now', 'Top Rated', 'Vedic', 'Tarot', 'Numerology', 'Vastu', 'Most Experienced'];
 
   return (
     <motion.div
-      variants={pageVariant}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      transition={{ duration: 0.4 }}
-      className="min-h-screen py-10 font-sans relative overflow-hidden"
-      style={{
-        background:
-          'linear-gradient(135deg, #fdf4ff 0%, #fff7ed 30%, #fdf2f8 60%, #fffbeb 100%)',
-      }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="min-h-screen relative overflow-hidden bg-[var(--bg-soft)]"
     >
       {/* Ambient blobs */}
-      <div
-        className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          transform: 'translate(-30%, -30%)',
-        }}
+      <motion.div
+        animate={{ scale: [1, 1.18, 1], opacity: [0.5, 0.9, 0.5] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute pointer-events-none -top-32 -left-32 w-[560px] h-[560px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(255,98,0,0.07) 0%, transparent 65%)', filter: 'blur(60px)' }}
       />
-      <div
-        className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(circle, rgba(251,146,60,0.14) 0%, transparent 70%)',
-          filter: 'blur(60px)',
-          transform: 'translate(30%, 30%)',
-        }}
-      />
-      <div
-        className="absolute top-1/2 left-1/2 w-[300px] h-[300px] rounded-full pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(circle, rgba(236,72,153,0.09) 0%, transparent 70%)',
-          filter: 'blur(70px)',
-          transform: 'translate(-50%, -50%)',
-        }}
+      <motion.div
+        animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0.8, 0.4] }}
+        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
+        className="absolute pointer-events-none -bottom-20 -right-20 w-[480px] h-[480px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(255,140,58,0.08) 0%, transparent 65%)', filter: 'blur(60px)' }}
       />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        {/* ── Page Header ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10"
+        >
+          {/* Title block */}
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Sparkles size={20} style={{ color: '#f59e0b' }} />
-              <span
-                className="text-xs font-bold uppercase tracking-widest"
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-4 text-xs font-semibold uppercase tracking-widest bg-[var(--accent-bg)] text-[var(--primary)] border border-[var(--accent-border)]"
+            >
+              <motion.div animate={{ rotate: [0, 15, -15, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+                <Sparkles size={12} />
+              </motion.div>
+              Live Experts Available
+            </motion.div>
+
+            <h1
+              className="font-bold tracking-tight leading-none text-[var(--text-heading)]"
+              style={{ fontSize: 'clamp(2rem, 4.5vw, 3rem)' }}
+            >
+              Chat with{' '}
+              <motion.span
+                animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+                transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
                 style={{
-                  background: 'linear-gradient(90deg,#f59e0b,#ec4899)',
+                  background: 'linear-gradient(90deg, var(--primary-dark), var(--primary), var(--primary-light), var(--primary))',
+                  backgroundSize: '200% auto',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
+                  display: 'inline-block',
                 }}
               >
-                Live Experts
-              </span>
-            </div>
-            <h1
-              className="text-4xl font-black"
-              style={{
-                background:
-                  'linear-gradient(90deg, #1f2937 0%, #7c3aed 50%, #ec4899 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              Chat with Astrologer
+                Astrologers
+              </motion.span>
             </h1>
-            <p className="text-gray-500 text-sm mt-1">
-              Connect instantly with verified Vedic experts
+            <p className="mt-2 text-sm text-[var(--text-muted)]">
+              Connect instantly with verified Vedic experts — real guidance, real time.
             </p>
           </div>
 
-          <div className="flex gap-3">
-            {/* Premium Search */}
+          {/* Search + Filter */}
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Search bar */}
             <div
-              className="relative rounded-full p-px"
+              className="relative flex items-center"
               style={{
-                background:
-                  'linear-gradient(90deg,#a855f7,#ec4899,#f59e0b)',
+                background: 'var(--bg-glass)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid var(--border-soft)',
+                borderRadius: 9999,
+                boxShadow: 'var(--shadow-sm)',
+                padding: '0 16px 0 40px',
+                height: 44,
               }}
             >
-              <div className="relative bg-white rounded-full flex items-center">
-                <Search
-                  className="absolute left-3"
-                  size={16}
-                  style={{ color: '#a855f7' }}
-                />
-                <input
-                  type="text"
-                  placeholder="Search name or skill..."
-                  className="pl-9 pr-4 py-2 rounded-full text-sm outline-none w-60 bg-transparent"
-                />
-              </div>
+              <Search size={14} className="absolute left-3.5 text-[var(--primary)]" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                type="text"
+                placeholder="Search name or skill…"
+                className="text-sm outline-none bg-transparent w-48 text-[var(--text)]"
+                style={{ fontFamily: 'inherit' }}
+              />
+              <AnimatePresence>
+                {search && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.7 }}
+                    onClick={() => setSearch('')}
+                    className="ml-2 flex-shrink-0 text-[var(--text-soft)] hover:text-[var(--primary)] transition-colors"
+                  >
+                    <X size={13} />
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border-0 text-white"
-              style={{
-                background:
-                  'linear-gradient(90deg,#a855f7,#ec4899)',
-                boxShadow: '0 4px 14px rgba(168,85,247,0.35)',
-              }}
+            {/* Filter button */}
+            <MagneticBtn
+              onClick={() => setFilterOpen(p => !p)}
+              className="btn-primary flex items-center gap-2 text-sm px-5 cursor-pointer"
+              style={{ height: 44, opacity: filterOpen ? 0.85 : 1 }}
             >
-              <Filter size={15} /> Filter
-            </motion.button>
+              <SlidersHorizontal size={14} />
+              Filter
+            </MagneticBtn>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Skeleton Loading */}
+        {/* ── Filter panel ── */}
+        <AnimatePresence>
+          {filterOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0, y: -8 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              exit={{ opacity: 0, height: 0, y: -8 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-hidden mb-8"
+            >
+              <div className="card-soft flex flex-wrap gap-2.5 p-5">
+                {filterTags.map((tag, i) => (
+                  <FilterTag
+                    key={tag}
+                    label={tag}
+                    active={activeFilter === tag}
+                    index={i}
+                    onClick={() => setActiveFilter(tag)}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Stats strip ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex items-center gap-6 mb-8 flex-wrap"
+        >
+          {[
+            { dot: '#22c55e', label: `${filtered.filter(a => a.isOnline).length} Online Now` },
+            { dot: 'var(--primary)', label: `${filtered.length} Experts` },
+            { dot: '#f59e0b', label: 'Avg 4.8★' },
+          ].map((s, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <motion.span
+                animate={{ scale: [1, 1.4, 1] }}
+                transition={{ duration: 1.8 + i * 0.4, repeat: Infinity }}
+                className="w-2 h-2 rounded-full flex-shrink-0 block"
+                style={{ background: s.dot }}
+              />
+              <span className="text-xs font-semibold text-[var(--text-muted)]">{s.label}</span>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* ── Loading skeletons ── */}
         {loading && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[0, 1, 2, 3, 4, 5].map(function(i) {
-              return (
-                <motion.div
-                  key={i}
-                  animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ repeat: Infinity, duration: 1.5 }}
-                  className="h-36 rounded-2xl"
-                  style={{
-                    background:
-                      'linear-gradient(135deg,rgba(168,85,247,0.08),rgba(236,72,153,0.08))',
-                  }}
-                />
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[0, 1, 2, 3, 4, 5].map(i => <SkeletonCard key={i} />)}
           </div>
         )}
 
-        {/* Astrologers Grid */}
-        {!loading && (
+        {/* ── Astrologer Grid ── */}
+        {!loading && filtered.length > 0 && (
           <motion.div
-            variants={container}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            variants={{ hidden: {}, show: { transition: { staggerChildren: 0.07 } } }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
           >
-            {astrologers.map(function(astro) {
-              return (
-                <motion.div
-                  key={astro._id}
-                  variants={cardVariant}
-                  whileHover={{
-                    y: -10,
-                    scale: 1.02,
-                    boxShadow:
-                      '0px 24px 48px rgba(168,85,247,0.18)',
-                  }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={function(e) {
-                    handleCardClick(e, astro._id);
-                  }}
-                  className="relative cursor-pointer rounded-2xl p-5 overflow-hidden"
-                  style={{
-                    background: 'rgba(255,255,255,0.75)',
-                    backdropFilter: 'blur(16px)',
-                    border: '1px solid rgba(168,85,247,0.15)',
-                    boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
-                  }}
-                >
-                  {/* Card gradient accent top */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-0.5"
-                    style={{
-                      background:
-                        'linear-gradient(90deg,#a855f7,#ec4899,#f59e0b)',
-                    }}
-                  />
-
-                  <div className="flex items-start gap-4">
-                    {/* Avatar */}
-                    <div className="relative flex-shrink-0">
-                      <div
-                        className="rounded-full p-0.5"
-                        style={{
-                          background:
-                            'linear-gradient(135deg,#a855f7,#ec4899,#f59e0b)',
-                          boxShadow:
-                            '0 0 16px rgba(168,85,247,0.4)',
-                        }}
-                      >
-                        <motion.img
-                          whileHover={{ scale: 1.08 }}
-                          transition={{
-                            type: 'spring',
-                            stiffness: 200,
-                          }}
-                          src={
-                            astro.profileImage ||
-                            'https://via.placeholder.com/80'
-                          }
-                          alt="astro"
-                          className="w-20 h-20 rounded-full object-cover block"
-                          style={{ border: '2px solid white' }}
-                        />
-                      </div>
-
-                      {astro.isOnline && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white"
-                          style={{
-                            background: '#22c55e',
-                            boxShadow: '0 0 8px rgba(34,197,94,0.6)',
-                          }}
-                        />
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start gap-2">
-                        <h3 className="font-bold text-gray-800 text-base leading-tight">
-                          {astro.userId?.name || 'Astrologer'}
-                        </h3>
-
-                        <div
-                          className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-                          style={{
-                            background:
-                              'linear-gradient(90deg,rgba(251,191,36,0.15),rgba(245,158,11,0.15))',
-                            color: '#b45309',
-                            border: '1px solid rgba(245,158,11,0.3)',
-                          }}
-                        >
-                          <Star
-                            size={11}
-                            style={{ fill: '#fbbf24', color: '#fbbf24' }}
-                          />
-                          {astro.rating || 0}
-                        </div>
-                      </div>
-
-                      <p
-                        className="text-xs mt-1 truncate"
-                        style={{
-                          background:
-                            'linear-gradient(90deg,#7c3aed,#ec4899)',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {astro.specialties?.join(', ')}
-                      </p>
-
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {astro.languages?.join(', ')}
-                      </p>
-
-                      <p className="text-xs font-semibold text-gray-500 mt-0.5">
-                        Exp:{' '}
-                        <span className="text-gray-700">
-                          {astro.experienceYears} Years
-                        </span>
-                      </p>
-
-                      <div className="mt-3 flex items-center justify-between">
-                        <div>
-                          <p
-                            className="text-sm font-black"
-                            style={{
-                              background:
-                                'linear-gradient(90deg,#ef4444,#f97316)',
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                              backgroundClip: 'text',
-                            }}
-                          >
-                            ₹{astro.pricePerMinute}/min
-                          </p>
-                        </div>
-
-                        <motion.button
-                          whileHover={{ scale: 1.06 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={function(e) {
-                            handleChatClick(
-                              e,
-                              astro.userId?.name
-                            );
-                          }}
-                          className="px-5 py-1.5 rounded-full text-xs font-bold text-white border-0"
-                          style={{
-                            background:
-                              'linear-gradient(90deg,#22c55e,#16a34a)',
-                            boxShadow:
-                              '0 4px 12px rgba(34,197,94,0.35)',
-                          }}
-                        >
-                          <span className="flex items-center gap-1">
-                            <Zap size={11} />
-                            Chat
-                          </span>
-                        </motion.button>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+            {filtered.map(astro => (
+              <AstroCard
+                key={astro._id}
+                astro={astro}
+                onCardClick={handleCardClick}
+                onChatClick={handleChatClick}
+              />
+            ))}
           </motion.div>
         )}
 
-        <AuthModal
-          isOpen={isModalOpen}
-          onClose={function() {
-            setIsModalOpen(false);
-          }}
-        />
-
-        {selectedAstrologer && (
-          <ChatBox
-            astrologer={selectedAstrologer}
-            onClose={function() {
-              setSelectedAstrologer(null);
-            }}
-          />
+        {/* ── Empty state ── */}
+        {!loading && filtered.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-24"
+          >
+            <div className="text-6xl mb-5">🔭</div>
+            <h3 className="text-xl font-bold mb-2 text-[var(--text-heading)]">No experts found</h3>
+            <p className="text-sm text-[var(--text-muted)] mb-6">Try a different search term</p>
+            <motion.button
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => setSearch('')}
+              className="btn-primary text-sm px-6 py-2.5 cursor-pointer"
+            >
+              Clear Search
+            </motion.button>
+          </motion.div>
         )}
       </div>
+
+      {/* ── Modals ── */}
+      <AuthModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {selectedAstrologer && (
+        <ChatBox astrologer={selectedAstrologer} onClose={() => setSelectedAstrologer(null)} />
+      )}
     </motion.div>
   );
 };

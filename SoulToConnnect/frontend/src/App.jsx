@@ -11,7 +11,9 @@ import Chat from './pages/Chat';
 import Call from './pages/Call';
 import Kundli from './pages/Kundli';
 import Astromall from './pages/Astromall';
+// import Product from "../../backend/models/Product";
 import Pooja from './pages/Pooja';
+import AddPuja from "./pages/AddPuja";
 import GenericPage from './pages/GenericPage';
 import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext';
@@ -44,7 +46,9 @@ import ArticleDetailPage from "./pages/ArticleDetailPage";
 import TermsOfUse from "./pages/TermsOfUse";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 
+
 import { PaymentProvider } from "./contexts/PaymentContext";
+import AddProduct from "./pages/AddProduct";
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -57,7 +61,9 @@ function AnimatedRoutes() {
         <Route path="/astrologer/:id" element={<AstrologerDetails />} />
         <Route path="/call" element={<Call />} />
         <Route path="/astromall" element={<Astromall />} />
+        <Route path="/addproduct" element={<AddProduct />} />
         <Route path="/pooja" element={<Pooja />} />
+        <Route path="/addpuja" element={<AddPuja/>} />
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
         <Route path="/terms" element={<TermsOfUse />} />
         <Route path="/about" element={<About />} />

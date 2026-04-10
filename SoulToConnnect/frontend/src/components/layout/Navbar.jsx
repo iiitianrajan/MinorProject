@@ -10,6 +10,7 @@ import AuthModal from '../auth/AuthModal';
 import WalletModal from '../payment/WalletModal';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
+import { useNavigate } from 'react-router-dom';
 
 /* ─── Dropdown panel base class ─── */
 const DD =
@@ -65,6 +66,7 @@ const ddAnim = {
 };
 
 const Navbar = ({ onProfileClick, onAddExpertClick }) => {
+  const navigate = useNavigate();
   const { totalItems } = useCart();
   const { currentUser, logout } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -304,7 +306,7 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
                         </button>
 
                         {currentUser.role === 'admin' && (
-                          <DropRow to="#" icon={<ShoppingBag size={14} />} label="Add Product" onClick={(e) => { e.preventDefault(); onProfileClick(); }} />
+                          <DropRow to="#" icon={<ShoppingBag size={14} />} label="Add Product" onClick={(e) => { e.preventDefault(); navigate('/addproduct') }} />
                         )}
 
                         <DropRow to="#" icon={<UserIcon size={14} />} label="Join as an Expert" onClick={(e) => { e.preventDefault(); onAddExpertClick(); }} />

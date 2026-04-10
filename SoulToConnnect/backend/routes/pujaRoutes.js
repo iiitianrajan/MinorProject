@@ -1,3 +1,10 @@
+const multer = require("multer");
+const { storage } = require("../config/cloudConfig");
+
+const upload = multer({ storage });
+
+
+
 // routes/pujaRoutes.js
 const express = require('express');
 const router = express.Router();
@@ -25,8 +32,8 @@ router.get('/:id', getPujaById);
    ADMIN PROTECTED ROUTES
 ───────────────────────────────────── */
 
-router.post('/',  createPuja);
-router.put('/:id', authMiddleware, updatePuja);
+router.post('/', upload.single("image"),  createPuja);
+// router.put('/:id', authMiddleware, updatePuja);
 router.delete('/:id', authMiddleware, deletePuja);
 
 module.exports = router;

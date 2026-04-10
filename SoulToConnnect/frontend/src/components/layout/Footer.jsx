@@ -15,6 +15,7 @@ const astrologyServices = [
   { name: 'Free Janam Kundli', path: '/kundali' },
   { name: 'Kundli Matching', path: '/kundali/matching' },
   { name: 'Book a Pooja Online', path: '/pooja' },
+  { name: 'add a Pooja Online', path: '/addpuja' },
 ];
 
 const horoscopes = [

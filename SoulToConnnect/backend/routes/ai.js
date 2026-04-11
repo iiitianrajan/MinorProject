@@ -28,7 +28,7 @@ router.post('/chat', async (req, res) => {
         headers: {
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "${import.meta.env.VITE_API_URL}",
+          "HTTP-Referer": `${import.meta.env.VITE_API_URL}`,
           "X-Title": "Astro App"
         }
       }

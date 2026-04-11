@@ -21,7 +21,7 @@ app.use(cors({
       callback(null, true);
     } else {
       console.log("❌ CORS blocked:", origin);
-      callback(new Error("Not allowed by CORS`));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   credentials: true
@@ -41,7 +41,7 @@ const productRoutes = require('./routes/productRoutes.js')
 const contactRoutes = require('./routes/contactRoutes.js')
 const astrologyRoutes = require('./routes/astrologyRoutes')
 const aiRoutes = require('./routes/ai');
-const reviewRoutes = require("./routes/reviewRoutes`);
+const reviewRoutes = require("./routes/reviewRoutes");
 const pujaRoutes = require('./routes/pujaRoutes.js')
 const paymentRoutes = require('./routes/paymentRoutes.js')
 
@@ -58,7 +58,7 @@ app.use('/api/payment',paymentRoutes)
 
 
 app.get("/", (req, res) => {
-  res.send("🚀 Backend is running successfully`);
+  res.send("🚀 Backend is running successfully");
 });
 
 

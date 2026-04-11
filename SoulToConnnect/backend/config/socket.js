@@ -6,7 +6,7 @@ const User = require('../models/User');
 const initSocketIO = (server) => {
 
   const allowedOrigins = [
-    "http://localhost:5173",
+    "https://minorproject-frontend.onrender.com",
     "http://localhost:5177"
   ];
 
@@ -17,7 +17,7 @@ const initSocketIO = (server) => {
           callback(null, true);
         } else {
           console.log("❌ Blocked by CORS:", origin);
-          callback(new Error("Not allowed by CORS`));
+          callback(new Error("Not allowed by CORS"));
         }
       },
       methods: ["GET", "POST"],

@@ -112,8 +112,8 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
       setLoading(true);
       const isLogin = tab === 'login';
       const url = isLogin
-        ? 'http://localhost:5001/api/auth/login'
-        : 'http://localhost:5001/api/auth/signup';
+        ? `${import.meta.env.VITE_API_URL}/api/auth/login`
+        : `${import.meta.env.VITE_API_URL}/api/auth/signup`;
       const payload = isLogin
         ? { phone: formData.phone, email: formData.email, password: formData.password }
         : { ...formData };

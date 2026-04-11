@@ -237,7 +237,7 @@ const Chat = () => {
   useEffect(() => {
     const fetchAstrologers = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/astrologer');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/astrologer`);
         const data = await res.json();
         setAstrologers(data);
       } catch (err) {

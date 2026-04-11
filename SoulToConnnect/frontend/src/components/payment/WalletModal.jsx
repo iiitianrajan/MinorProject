@@ -20,7 +20,7 @@ const WalletModal = ({ isOpen, onClose }) => {
     // Simulate backend call to create order
     try {
       /* 
-      const res = await fetch('http://localhost:5001/api/wallet/create-order', {
+      const res = await fetch('${import.meta.env.VITE_API_URL}/api/wallet/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount }),

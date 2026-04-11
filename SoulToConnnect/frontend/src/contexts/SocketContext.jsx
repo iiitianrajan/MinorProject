@@ -11,7 +11,8 @@ export const SocketProvider = ({ children }) => {
 
   useEffect(() => {
     // Initialize Socket.io connecting to the backend port 5001
-    const newSocket = io('http://localhost:5001');
+    const newSocket = io(`${import.meta.env.VITE_API_URL}`);
+    console.log("SOCKET URL:", import.meta.env.VITE_API_URL);
     setSocket(newSocket);
 
     newSocket.on('connect', () => {

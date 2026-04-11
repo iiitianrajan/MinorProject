@@ -190,7 +190,7 @@ export default function Puja() {
     const fetchPujas = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5001/api/puja', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/puja`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         });

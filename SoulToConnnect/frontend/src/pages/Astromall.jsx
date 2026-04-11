@@ -362,7 +362,7 @@ const Astromall = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('http://localhost:5001/api/product');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/product`);
         const data = await res.json();
         setProducts(data);
       } catch (err) {

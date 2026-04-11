@@ -72,10 +72,10 @@ const AstrologerDetails = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    fetch("http://localhost:5001/api/astrologer/" + id)
+    fetch(`${import.meta.env.VITE_API_URL}/api/astrologer/` + id)
       .then((r) => r.json())
       .then((d) => setAstro(d));
-    fetch("http://localhost:5001/api/review/" + id, {
+    fetch(`${import.meta.env.VITE_API_URL}/api/review/` + id, {
       headers: { Authorization: "Bearer " + token },
     })
       .then((r) => {
@@ -104,7 +104,7 @@ const AstrologerDetails = () => {
     if (!currentUser) return setIsModalOpen(true);
     if (rating === 0) return alert("Please select rating");
     const token = localStorage.getItem("token");
-    const res = await fetch("http://localhost:5001/api/review", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/review`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -550,8 +550,8 @@ const AstrologerDetails = () => {
             className="grid grid-cols-3 gap-5"
           >
             {[
-              { value: `${ratingStats.total}+`, label: "Total Reviews", icon: "⭐" },
-              { value: `${astro.experienceYears} Yrs`, label: "Of Experience", icon: "🕐" },
+              { value: "${ratingStats.total}+", label: "Total Reviews", icon: "⭐" },
+              { value: "${astro.experienceYears} Yrs", label: "Of Experience", icon: "🕐" },
               { value: "98%", label: "Accuracy Rate", icon: "🎯" },
             ].map((s, i) => (
               <motion.div

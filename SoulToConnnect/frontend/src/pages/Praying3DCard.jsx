@@ -122,7 +122,7 @@ function CanvasLoader() {
 
 const Model = React.memo(function Model({ mouseX, mouseY }) {
   const groupRef = useRef();
-  const fbx = useFBX("/models/Praying.fbx");
+  const fbx = useFBX("/models/Praying.fbx`);
 
   // Auto-center + auto-scale once on mount
   const normalizedFbx = useMemo(() => {
@@ -321,8 +321,8 @@ export default function Praying3DCard() {
 
   // Inject global keyframes once
   useEffect(() => {
-    if (document.getElementById("p3d-styles")) return;
-    const tag = document.createElement("style");
+    if (document.getElementById("p3d-styles`)) return;
+    const tag = document.createElement("style`);
     tag.id = "p3d-styles";
     tag.textContent = INJECTED_STYLES;
     document.head.appendChild(tag);

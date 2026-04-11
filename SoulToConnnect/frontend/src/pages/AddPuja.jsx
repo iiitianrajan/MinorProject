@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE   = 'http://localhost:5001';
+const API_BASE   = import.meta.env.VITE_API_URL;
 const CATEGORIES = ['PROSPERITY', 'PROTECTION', 'ALIGNMENT', 'HEALING', 'LOVE', 'OTHER'];
 
 /* ═══════════════════════════════════════

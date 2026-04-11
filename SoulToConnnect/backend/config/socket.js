@@ -17,7 +17,7 @@ const initSocketIO = (server) => {
           callback(null, true);
         } else {
           console.log("❌ Blocked by CORS:", origin);
-          callback(new Error("Not allowed by CORS"));
+          callback(new Error("Not allowed by CORS`));
         }
       },
       methods: ["GET", "POST"],

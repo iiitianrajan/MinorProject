@@ -10,14 +10,14 @@ const authMiddleware = (req, res, next) => {
     const authHeader = req.headers.authorization;
     // console.log(authHeader)
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader || !authHeader.startsWith("Bearer `)) {
       return res.status(401).json({
         success: false,
         message: "No token provided"
       });
     }
 
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split(" `)[1];
     // console.log(token)
     console.log(JWT_SECRET)
 

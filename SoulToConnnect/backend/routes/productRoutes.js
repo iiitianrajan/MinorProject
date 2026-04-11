@@ -3,8 +3,8 @@ const router = express.Router();
 const Product = require('../models/Product');
 const authMiddleware = require('../middleware/authMiddleware.js')
 
-const multer = require("multer");
-const { storage } = require("../config/cloudConfig");
+const multer = require("multer`);
+const { storage } = require("../config/cloudConfig`);
 
 const upload = multer({ storage });
 

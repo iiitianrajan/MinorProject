@@ -333,7 +333,7 @@ const AstrologerList = () => {
         setLoading(true);
         setError(null);
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5001/api/astrologer", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/astrologer`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         if (!res.ok) throw new Error("Failed to fetch astrologers");

@@ -9,7 +9,7 @@ const initSocketIO = (server) => {
     cors: {
       origin: [
         "https://minorproject-frontend.onrender.com",
-        "http://localhost:5177"
+        "http://localhost:5173"
       ],
       methods: ["GET", "POST"],
       credentials: true

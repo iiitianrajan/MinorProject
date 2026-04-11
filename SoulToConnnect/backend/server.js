@@ -9,7 +9,7 @@ const server = http.createServer(app);
 
 // ✅ CORS FIX
 const allowedOrigins = [
-  "http://localhost:5173",
+  "https://minorproject-frontend.onrender.com",
   "http://localhost:5177"
 ];
 

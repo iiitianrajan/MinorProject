@@ -1,5 +1,5 @@
-const multer = require("multer`);
-const { storage } = require("../config/cloudConfig`);
+const multer = require("multer");
+const { storage } = require("../config/cloudConfig");
 
 const upload = multer({ storage });
 
@@ -32,7 +32,7 @@ router.get('/:id', getPujaById);
    ADMIN PROTECTED ROUTES
 ───────────────────────────────────── */
 
-router.post('/', upload.single("image`),  createPuja);
+router.post('/', upload.single("image"),  createPuja);
 // router.put('/:id', authMiddleware, updatePuja);
 router.delete('/:id', authMiddleware, deletePuja);
 

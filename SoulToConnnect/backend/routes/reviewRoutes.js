@@ -1,10 +1,10 @@
-const express = require("express`);
+const express = require("express");
 const router = express.Router();
-const mongoose = require("mongoose`);
+const mongoose = require("mongoose");
 
-const Review = require("../models/Review`);
-const Astrologer = require("../models/Astrologer`);
-const authMiddleware = require("../middleware/authMiddleware`);
+const Review = require("../models/Review");
+const Astrologer = require("../models/Astrologer");
+const authMiddleware = require("../middleware/authMiddleware");
 
 
 // =======================
@@ -82,7 +82,7 @@ router.post("/", authMiddleware, async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const reviews = await Review.find({ productId: req.params.id })
-      .populate("userId", "name profilePicture`)
+      .populate("userId", "name profilePicture")
       .sort({ createdAt: -1 });
 
     res.json(reviews);

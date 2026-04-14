@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * TermsOfUse Component
+ * TermsOfUse 
  * 
  * This component renders the 'Terms of Use' page using the refined Celestial Ember
  * design system tokens (CSS variables) provided in the user's latest index.css.
@@ -9,7 +9,7 @@ import React from 'react';
  */
 const TermsOfUse = () => {
   const sections = [
-    { id: 'acceptance', label: 'Acceptance ' },
+    { id: 'acceptance ', label: 'Acceptance ' },
     { id: 'sacred-spaces', label: 'Sacred Spaces' },
     { id: 'insights-ip', label: 'Insights IP' },
     { id: 'disclaimers', label: 'Disclaimers' },

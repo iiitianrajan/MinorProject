@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("token");
     setCurrentUser(null);
-    window.location.href = "https://minorproject-frontend.onrender.com/"
+    window.location.href = "https://minorproject-frontend.onrender.com"
   };
 
   return (

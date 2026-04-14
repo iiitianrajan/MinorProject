@@ -67,9 +67,9 @@ const WhyAstrologyMatters = () => {
 
           <div className="mt-24 relative rounded-[2.5rem] overflow-hidden shadow-[var(--shadow-lg)] border border-[var(--border-soft)] aspect-[21/9]">
             <img 
-              src="https://images.unsplash.com/photo-1603262110263-fb0112e7cc33?auto=format&fit=crop&w=2000&q=80" 
+              src="https://res.cloudinary.com/dqzin6dfk/image/upload/v1776112936/Gemini_Generated_Image_rduq4yrduq4yrduq_gxbf2w.png" 
               alt="Cosmic Star Field" 
-              className="w-full h-full object-cover opacity-80"
+              className="w-full h-full object-cover opacity-70"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg)] via-transparent to-transparent"></div>
           </div>
@@ -128,7 +128,7 @@ const WhyAstrologyMatters = () => {
             <div className="relative grid grid-cols-2 gap-4">
                <div className="space-y-4 pt-12">
                  <div className="card-soft aspect-square overflow-hidden p-0 rounded-[2rem]">
-                   <img src="https://images.unsplash.com/photo-1518133910546-b6c2fb7d79e3?auto=format&fit=crop&q=80&w=800" alt="Technical Chart" className="w-full h-full object-cover opacity-60" />
+                   <img src="https://res.cloudinary.com/dqzin6dfk/image/upload/v1776113160/i1_wr4vqc.jpg" alt="Technical Chart" className="w-full h-full object-cover opacity-60" />
                  </div>
                  <div className="card aspect-[3/4] flex flex-col justify-end p-8">
                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] mb-3" style={{ color: 'var(--primary)' }}>Rigorous Data</span>

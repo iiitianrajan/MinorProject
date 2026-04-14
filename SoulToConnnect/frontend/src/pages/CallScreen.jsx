@@ -148,7 +148,7 @@ export default function CallScreen() {
       recognitionRef.current.stop();
     }
     setStatus("ended");
-    window.location.href = "http://localhost:5173/chat";
+    window.location.href = `${import.meta.env.VITE_API_URL}/chat`;
   }
 
   const statusColor =

@@ -8,10 +8,10 @@ const astrologerSchema = new mongoose.Schema({
     required: true 
   },
 
-  specialties: [{ 
-    type: String,
-    enum: ['Vedic', 'Tarot', 'Numerology', 'Palmistry']
-  }],
+ specialties: [{ 
+  type: String,
+  enum: ['Vedic Astrology', 'Tarot', 'Numerology', 'Palmistry', 'Vastu', 'Face Reading']
+}],
 
   languages: [{ type: String, lowercase: true }],
 
@@ -20,6 +20,8 @@ const astrologerSchema = new mongoose.Schema({
   rating: { type: Number, default: 0, min: 0, max: 5 },
 
   reviewCount: { type: Number, default: 0 },
+
+  fullName: { type: String },
 
   pricePerMinute: { type: Number, required: true, default: 15, min: 1 },
 

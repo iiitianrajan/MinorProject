@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Youtube, Sparkles, Star, Heart, ArrowRight, Shield, Phone, MessageSquare } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, Sparkles, Star, Heart, ArrowRight, Shield, Phone, MessageSquare, Users } from 'lucide-react';
+import Counter from '../../pages/Counter';
+import WaveText from '../../Animation/WaveText';
+import LetterReveal from '../../Animation/LetterReveal';
 
 const socialLinks = [
   { href: 'https://www.facebook.com/', icon: Facebook, label: 'Facebook' },
@@ -12,8 +15,8 @@ const socialLinks = [
 const astrologyServices = [
   { name: 'Chat with Expert', path: '/chat' },
   { name: 'Talk to Expert', path: '/call' },
-  { name: 'Free Janam Kundli', path: '/kundali' },
-  { name: 'Kundli Matching', path: '/kundali/matching' },
+  { name: 'Free Janam Kundli', path: '/kundli' },
+  { name: 'Kundli Matching', path: '/kundli-matching' },
   { name: 'Book a Pooja Online', path: '/pooja' },
   { name: 'add a Pooja Online', path: '/addpuja' },
 ];
@@ -144,10 +147,12 @@ const Footer = () => {
                 className="text-xl md:text-2xl font-bold mb-1"
                 style={{ color: 'var(--text-heading)', fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.03em' }}
               >
-                Ready to discover your destiny?
+                <WaveText text="Ready to discover your destiny?" />
+
               </h3>
               <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                Connect with India's top verified astrologers right now.
+                <LetterReveal text="Connect with India's top verified astrologers right now." />
+
               </p>
             </div>
 
@@ -225,9 +230,8 @@ const Footer = () => {
             </Link>
 
             <p className="text-sm leading-relaxed max-w-sm" style={{ color: 'var(--text-muted)' }}>
-              India's premier astrology platform connecting you with verified Vedic astrologers,
-              Tarot readers, and Numerologists. Over 5 Crore users trust us for guidance in
-              love, career, and life.
+              <LetterReveal text="India's premier astrology platform connecting you with verified Vedic astrologers,Tarot readers,and Numerologists.Over 5 Crore users trust us for guidance in love, career, and life."/>
+
             </p>
 
             {/* Trust badges — same pill style as Home's hero badge */}
@@ -342,20 +346,30 @@ const Footer = () => {
               style={{ borderTop: '1px solid var(--border-soft)' }}
             >
               {[
-                { emoji: '⭐', value: '4.9 / 5', label: 'App Rating' },
-                { emoji: '👥', value: '5 Crore+', label: 'Happy Users' },
-              ].map((s, i) => (
-                <div key={i} className="flex items-center gap-2.5">
-                  <span className="text-base leading-none">{s.emoji}</span>
+                {
+                  emoji: <Star size={14} className="text-[var(--primary)]" />,
+                  value: 4.9,
+                  suffix: " / 5",
+                  label: "App Rating",
+                },
+                {
+                  emoji: <Users size={14} className="text-[var(--primary)]" />,
+                  value: 5000, // 5 Crore
+                  suffix: "+",
+                  label: "Happy Users",
+                },
+              ].map((stat, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  {stat.emoji}
+
                   <div>
-                    <div
-                      className="text-sm font-bold leading-tight"
-                      style={{ color: 'var(--text-heading)', fontFamily: 'Poppins, sans-serif' }}
-                    >
-                      {s.value}
+                    <div className="text-sm font-bold">
+                      <Counter to={stat.value} />
+                      {stat.suffix}
                     </div>
-                    <div className="text-[11px]" style={{ color: 'var(--text-soft)' }}>
-                      {s.label}
+
+                    <div className="text-xs text-[var(--text-soft)]">
+                      {stat.label}
                     </div>
                   </div>
                 </div>
@@ -408,7 +422,7 @@ const Footer = () => {
           >
             © 2026 SoulToConnect / DivyaDarshan. All rights reserved.
             <br />
-            Made with ❤️ using React, Tailwind &amp; Framer Motion.
+            Made with <span style={{ color: '#b54300' }}>❤️</span> using React, Tailwind &amp; Framer Motion.
           </p>
         </div>
       </div>

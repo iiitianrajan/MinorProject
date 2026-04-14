@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, Mail, Phone, LogOut, Wallet, Calendar, MapPin, User,
@@ -7,6 +8,8 @@ import {
   TrendingUp, Package
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import MyBookings from "./MyBookings";
+import WalletModal from '../components/payment/WalletModal';
 
 /* ─── Section Label (matches Home.jsx) ─── */
 const SLabel = ({ children }) => (
@@ -92,9 +95,14 @@ const OrderRow = ({ name, orderId, date, price, status, image }) => (
 
 /* ─── Main Component ─── */
 const ProfileModal = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
   const [activeNav, setActiveNav] = useState('Profile Dashboard');
   const [activeTab, setActiveTab] = useState('AstroMall Orders');
+  
+const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+const [openDropdown, setOpenDropdown] = useState(null);
+const close = () => setOpenDropdown(null);
 
   if (!isOpen) return null;
 
@@ -247,6 +255,9 @@ const ProfileModal = ({ isOpen, onClose }) => {
                       whileHover={{ scale: 1.04, y: -1 }}
                       whileTap={{ scale: 0.96 }}
                       className="btn-primary mt-2 text-xs"
+                      onClick={() => { setIsWalletModalOpen(true); close(); 
+                        
+                      }}
                       style={{ padding: '0.35rem 1rem', borderRadius: '9999px' }}
                     >
                       Top Up Balance
@@ -354,6 +365,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                       whileHover={{ x: 2 }}
                       className="flex items-center gap-1 text-xs font-semibold border-0 bg-transparent"
                       style={{ color: 'var(--primary)' }}
+                      onClick={(e)=>{ navigate('/kundli')}}
                     >
                       View Full Chart <ChevronRight size={12} />
                     </motion.button>
@@ -368,78 +380,10 @@ const ProfileModal = ({ isOpen, onClose }) => {
 
                 {/* ── Active Rituals ── */}
                 <section>
-                  <div className="mb-4">
-                    <SLabel>Upcoming Events</SLabel>
-                    <h3 className="text-xl font-bold" style={{ color: 'var(--text-heading)' }}>
-                      Active Rituals
-                    </h3>
-                  </div>
+                 
+                  <MyBookings/>
 
-                  <motion.div
-                    whileHover={{ y: -4 }}
-                    className="card overflow-hidden flex flex-col sm:flex-row gap-0 cursor-pointer"
-                    style={{ padding: 0 }}
-                  >
-                    {/* Thumbnail */}
-                    <div
-                      className="sm:w-36 h-36 sm:h-auto flex-shrink-0 flex items-center justify-center text-4xl"
-                      style={{ background: 'var(--bg-soft)', borderRadius: '1.5rem 0 0 1.5rem' }}
-                    >
-                      🌌
-                    </div>
-                    {/* Content */}
-                    <div className="flex-1 p-5">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span
-                            className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full"
-                            style={{ background: 'var(--accent-bg)', color: 'var(--primary)', border: '1px solid var(--accent-border)' }}
-                          >
-                            1:1 Virtual Session
-                          </span>
-                          <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-soft)' }}>
-                            <Clock size={11} /> Oct 24, 2024
-                          </div>
-                        </div>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          className="w-7 h-7 rounded-full flex items-center justify-center border-0 flex-shrink-0"
-                          style={{ background: 'var(--bg-soft)', color: 'var(--text-muted)' }}
-                        >
-                          <MoreHorizontal size={13} />
-                        </motion.button>
-                      </div>
-
-                      <h4 className="text-lg font-bold mb-1.5" style={{ color: 'var(--text-heading)' }}>
-                        Solar Return Deep Dive
-                      </h4>
-                      <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-muted)' }}>
-                        Explore the themes for your upcoming birthday year. We'll track all your transits, solar house placements, and key planetary cycles.
-                      </p>
-
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-7 h-7 rounded-full flex items-center justify-center text-sm"
-                            style={{ background: 'var(--accent-bg)' }}
-                          >
-                            🔮
-                          </div>
-                          <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>
-                            Master Astrologer
-                          </span>
-                        </div>
-                        <motion.button
-                          whileHover={{ scale: 1.04, y: -1 }}
-                          whileTap={{ scale: 0.96 }}
-                          className="btn-primary text-sm flex items-center gap-2"
-                          style={{ padding: '0.5rem 1.4rem' }}
-                        >
-                          <Zap size={13} /> Join Session
-                        </motion.button>
-                      </div>
-                    </div>
-                  </motion.div>
+                 
                 </section>
 
                 {/* ── Cosmic History ── */}
@@ -555,6 +499,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
           </motion.div>
         </div>
       )}
+      <WalletModal isOpen={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} />
     </AnimatePresence>
   );
 };

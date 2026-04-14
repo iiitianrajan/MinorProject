@@ -128,7 +128,7 @@ const Kundli = () => {
       {/* ═══════════════════════════════════
           HERO — two-column
       ═══════════════════════════════════ */}
-      <section className="relative min-h-screen flex items-center pt-24 pb-32 overflow-hidden">
+      <section className="relative min-h-screen flex items-center pt-18 pb-20 overflow-hidden">
 
         {/* Ambient glow blobs */}
         <motion.div

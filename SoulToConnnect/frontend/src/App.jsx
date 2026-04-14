@@ -25,6 +25,7 @@ import ProfileModal from './pages/ProfileModel';
 import ExpertForm from "./pages/ExpertForm";
 import Cart from "./pages/Cart";
 import { CartProvider } from "./contexts/CartContext";
+import CategoryPage from "./pages/Categorypage";
 
 
 import About from "./pages/AboutUs";
@@ -50,6 +51,9 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import { PaymentProvider } from "./contexts/PaymentContext";
 import AddProduct from "./pages/AddProduct";
 
+import BookingPage from "./pages/BookingPage";
+import MyBookings from "./pages/MyBookings";
+
 function AnimatedRoutes() {
   const location = useLocation();
 
@@ -61,9 +65,9 @@ function AnimatedRoutes() {
         <Route path="/astrologer/:id" element={<AstrologerDetails />} />
         <Route path="/call" element={<Call />} />
         <Route path="/astromall" element={<Astromall />} />
-        <Route path="/addproduct" element={<AddProduct />} />
+        <Route path="/addproduct" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
         <Route path="/pooja" element={<Pooja />} />
-        <Route path="/addpuja" element={<AddPuja/>} />
+        <Route path="/addpuja" element={<ProtectedRoute><AddPuja/></ProtectedRoute>} />
         <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
         <Route path="/terms" element={<TermsOfUse />} />
         <Route path="/about" element={<About />} />
@@ -78,8 +82,12 @@ function AnimatedRoutes() {
         <Route path="/love-calculator" element={<ProtectedRoute><LoveCalculator /></ProtectedRoute>} />
         <Route path="/moon-sign" element={<ProtectedRoute><MoonSign /></ProtectedRoute>} />
         <Route path="/horoscopepage" element={<ProtectedRoute><HoroscopePage /></ProtectedRoute>} />
-        <Route path="/blog" element={<ProtectedRoute><BlogPage /></ProtectedRoute>} />
-        <Route path="/blog/:id" element={<ProtectedRoute><ArticleDetailPage /></ProtectedRoute>} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:id" element={<ArticleDetailPage />} />
+        <Route path="/book/:id" element={<ProtectedRoute><BookingPage /></ProtectedRoute>} />
+        <Route path="/profile/bookings"  element={<MyBookings  />} />
+        {/* <Route path="/category/:slug"  element={<CategoryPage  />} /> */}
+
 
 
         <Route path="/astrologerList" element={<ProtectedRoute><AstrologerList /></ProtectedRoute>} />
@@ -97,8 +105,8 @@ function App() {
 
   return (
     <AuthProvider>
-      <SocketProvider>
-        <WebRTCProvider>
+      
+        {/* <WebRTCProvider> */}
           <CartProvider>
             <PaymentProvider>
               <Router>
@@ -127,7 +135,7 @@ function App() {
                     onAddExpertClick={() => setAddExpert(true)}
                   />
 
-                  <main className="flex-grow">
+                  <main className="flex-grow pt-16">
                     <ScrollToTop />
                     <AnimatedRoutes />
                   </main>
@@ -148,8 +156,8 @@ function App() {
               </Router>
             </PaymentProvider>
           </CartProvider>
-        </WebRTCProvider>
-      </SocketProvider>
+        {/* </WebRTCProvider> */}
+      
     </AuthProvider>
   );
 }

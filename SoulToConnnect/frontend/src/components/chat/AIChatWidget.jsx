@@ -34,7 +34,7 @@ const AIChatWidget = () => {
       {/* Persistent Floating Button */}
       <button 
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 left-6 z-[9990] w-14 h-14 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 transition-transform"
+        className="fixed bottom-6 left-6 z-[9990] w-14 h-14 bg-gradient-to-r from-[#c44a00] to-[#8a3400] rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 transition-transform"
       >
         <Bot size={28} />
       </button>
@@ -49,7 +49,7 @@ const AIChatWidget = () => {
             className="fixed bottom-24 left-6 z-[9999] w-[340px] h-[480px] bg-white rounded-2xl shadow-2xl border border-[var(--border)] overflow-hidden flex flex-col"
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white flex justify-between items-center">
+            <div className="bg-gradient-to-r from-[#c44a00] to-[#8a3400] p-4 text-white flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                   <Bot size={18} />
@@ -89,7 +89,7 @@ const AIChatWidget = () => {
                   placeholder="Ask me anything..." 
                   className="flex-1 bg-gray-100 rounded-full pl-4 pr-10 py-2.5 text-sm outline-none focus:ring-2 focus:ring-purple-500/20"
                 />
-                <button type="submit" className="absolute right-1 cursor-pointer top-1 w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white hover:bg-purple-700 transition-colors">
+                <button type="submit" className="absolute right-1 cursor-pointer top-1 w-8 h-8 bg-gradient-to-r from-[#c44a00] to-[#c44a00] rounded-full flex items-center justify-center text-white hover:bg-[##c44a00]-700 transition-colors">
                   <Send size={14} />
                 </button>
               </form>

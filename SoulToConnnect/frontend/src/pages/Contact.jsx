@@ -5,6 +5,9 @@ import {
   Mail, User, MessageSquare, Sparkles, ArrowRight,
   HelpCircle, Phone, MapPin, Globe, Star, Users
 } from 'lucide-react';
+import { HashLink } from "react-router-hash-link";
+import { Link } from 'react-router-dom';
+
 
 /* ─── Section Label — mirrors Home.jsx SLabel ─── */
 const SLabel = ({ children }) => (
@@ -188,7 +191,7 @@ const Contact = () => {
                   <StyledInput
                     icon={<User size={14} />}
                     name="name"
-                    placeholder="Astria Vane"
+                    placeholder="Full Name"
                     value={form.name}
                     onChange={handleChange}
                   />
@@ -198,7 +201,7 @@ const Contact = () => {
                     icon={<Mail size={14} />}
                     name="email"
                     type="email"
-                    placeholder="astria@starlight.com"
+                    placeholder="astro@gmail.com"
                     value={form.email}
                     onChange={handleChange}
                   />
@@ -323,6 +326,7 @@ const Contact = () => {
               </h3>
 
               {/* FAQ row */}
+              <HashLink smooth to="/#faq">
               <motion.div
                 whileHover={{ x: 4, backgroundColor: 'var(--bg-soft)' }}
                 style={{
@@ -332,14 +336,17 @@ const Contact = () => {
                   transition: 'all 0.2s ease', marginBottom: 12,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div  style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <HelpCircle size={15} style={{ color: 'var(--primary)' }} />
                   <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-heading)' }}>
+                
                     FAQ & Help Center
+               
                   </span>
                 </div>
                 <ArrowRight size={14} style={{ color: 'var(--text-soft)' }} />
               </motion.div>
+              </HashLink>
 
               {/* Discovery Call — dark card, matches Home.jsx dark CTA banner */}
               <motion.div
@@ -464,6 +471,7 @@ const Contact = () => {
                 <p style={{ fontSize: '0.72rem', color: 'var(--text-soft)', marginBottom: 6 }}>
                   Connect with 12k+ cosmic souls.
                 </p>
+                <a href="https://discord.com/">
                 <motion.span
                   whileHover={{ x: 3 }}
                   style={{
@@ -473,6 +481,7 @@ const Contact = () => {
                 >
                   Join Discord <ArrowRight size={11} />
                 </motion.span>
+                </a>
               </div>
             </motion.div>
 

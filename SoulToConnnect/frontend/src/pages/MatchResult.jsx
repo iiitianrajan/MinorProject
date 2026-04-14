@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate,Link } from "react-router-dom";
 
 /* ─── Zodiac Logic ─── */
 function getZodiac(day, month) {
@@ -196,7 +196,8 @@ export default function MatchResult() {
                 <p style={{fontSize:"0.82rem",opacity:0.85,lineHeight:1.55,marginBottom:"1.25rem"}}>
                   Gain deeper clarity on your compatibility with a 1-on-1 session with our senior astrologers.
                 </p>
-                <button style={s.bookBtn}>Book Session</button>
+                <Link to={'/chat'}>
+                <button style={s.bookBtn}>Chat With Experts</button></Link>
               </div>
             </div>
 

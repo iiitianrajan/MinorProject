@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion';
 import {
   ChevronDown, Menu, X, User as UserIcon, LogOut, Wallet,
   MessageCircle, Phone, ShoppingBag, Sparkles, Star, Heart
@@ -11,6 +11,7 @@ import WalletModal from '../payment/WalletModal';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
+import ShineWrapper from '../../Animation/ShineWrapper';
 
 /* ─── Dropdown panel base class ─── */
 const DD =
@@ -59,9 +60,9 @@ const DropRow = ({ to, icon, label, sub, onClick }) => (
 
 /* ─── Shared dropdown animation props ─── */
 const ddAnim = {
-  initial:    { opacity: 0, y: 8, scale: 0.97 },
-  animate:    { opacity: 1, y: 0, scale: 1 },
-  exit:       { opacity: 0, y: 8, scale: 0.97 },
+  initial: { opacity: 0, y: 8, scale: 0.97 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: 8, scale: 0.97 },
   transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
 };
 
@@ -77,7 +78,43 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navRef = useRef(null);
+  // Keep your existing refs, just add these two:
   const lastScrollY = useRef(0);
+  const ticking = useRef(false);   // rAF gate
+  const scrollDelta = useRef(0);       // accumulated delta for jitter filter
+  // ── Smooth scroll-driven background ──────────────────────────
+  const { scrollY } = useScroll();
+
+  // Raw scroll → 0 to 1 over first 80px
+  const rawBg = useTransform(scrollY, [0, 80], [0, 1]);
+
+  // Spring smoothing — makes the transition feel physical, not instant
+  const bgProgress = useSpring(rawBg, {
+    stiffness: 80,
+    damping: 20,
+    restDelta: 0.001,
+  });
+
+  // Interpolate background color: transparent → #c84c00 with opacity
+  const navBackground = useTransform(
+    bgProgress,
+    [0, 1],
+    ['rgba(200, 76, 0, 0)', 'rgba(149, 58, 1, 0.7)']
+  );
+
+  
+  const navShadow = useTransform(
+    bgProgress,
+    [0, 1],
+    ['0 0px 0px rgba(200,76,0,0)', '0 4px 32px rgba(200,76,0,0.25)']
+  );
+
+  // Interpolate border opacity
+  const navBorder = useTransform(
+    bgProgress,
+    [0, 1],
+    ['rgba(255,255,255,0)', 'rgba(255,255,255,0.15)']
+  );
 
   const openAuth = (tab) => { setAuthTab(tab); setIsAuthModalOpen(true); };
   const toggle = (name) => setOpenDropdown(p => (p === name ? null : name));
@@ -91,31 +128,80 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
   }, []);
 
   useEffect(() => {
-    const onScroll = () => {
+    const THRESHOLD = 10;   
+    const TOP_LOCK = 80;   
+
+    const update = () => {
       const y = window.scrollY;
+
+      
       setScrolled(y > 20);
-      if (Math.abs(y - lastScrollY.current) < 10) return;
-      setShowNavbar(y < lastScrollY.current || y <= 80);
+
+      const delta = y - lastScrollY.current;
+      scrollDelta.current += delta;
+
+      // Only act once accumulated movement exceeds threshold
+      if (Math.abs(scrollDelta.current) >= THRESHOLD) {
+        if (y <= TOP_LOCK) {
+          setShowNavbar(true);                        // always visible near top
+        } else if (scrollDelta.current > 0) {
+          setShowNavbar(false);                       // scrolling down → hide
+        } else {
+          setShowNavbar(true);                        // scrolling up  → show
+        }
+        scrollDelta.current = 0;                      // reset accumulator
+      }
+
       lastScrollY.current = y;
+      ticking.current = false;
     };
-    window.addEventListener('scroll', onScroll);
+
+    const onScroll = () => {
+      if (!ticking.current) {
+        requestAnimationFrame(update);
+        ticking.current = true;
+      }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
     <>
-      {/* ════════════════════════════
-          DESKTOP NAV
-      ════════════════════════════ */}
-      <nav
+      {/*DESKTOP NAV*/}
+      <motion.nav
         ref={navRef}
-        className={`sticky top-0 z-50 w-full  transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
-          ${showNavbar ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}
-          ${scrolled
-            ? 'bg-[var(--bg-glass)] backdrop-blur-2xl shadow-[var(--shadow-sm)] border-b border-[var(--border-soft)]'
-            : 'bg-transparent'
-          }`}
+        style={{
+          backgroundColor: navBackground,
+          boxShadow: navShadow,
+          borderBottomColor: navBorder,
+        }}
+        animate={{
+          y: showNavbar ? 0 : '-100%',
+          opacity: showNavbar ? 1 : 0,
+          marginLeft: showNavbar ? '0px' : '48px',
+          marginRight: showNavbar ? '0px' : '48px',
+          borderRadius: showNavbar ? '0px' : '999px',
+          marginTop: showNavbar ? '0px' : '10px',
+        }}
+        transition={{
+          y: { type: 'spring', stiffness: 260, damping: 28, mass: 0.8 },
+          opacity: { duration: 0.25, ease: 'easeInOut' },
+          marginLeft: { type: 'spring', stiffness: 200, damping: 26 },
+          marginRight: { type: 'spring', stiffness: 200, damping: 26 },
+          borderRadius: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+          marginTop: { duration: 0.35, ease: [0.22, 1, 0.36, 1] },
+        }}
+        className={[
+          'fixed top-0 left-0 right-0 z-50',   
+          'will-change-transform',
+          'border-b backdrop-blur-xl',
+          !showNavbar && 'pointer-events-none',
+        ].filter(Boolean).join(' ')}
       >
+        {/* ... rest of your nav content unchanged ... */}
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
 
           {/* Logo */}
@@ -124,7 +210,7 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
               <div className="absolute inset-0 gradient-primary rounded-full blur-md opacity-25
                 group-hover:opacity-50 transition-opacity duration-300" />
               <img
-                src="https://as2.ftcdn.net/v2/jpg/05/77/75/23/1000_F_577752354_WbjctGllEUKGVBW29pojzAHAlwysroaX.jpg"
+                src="https://res.cloudinary.com/dqzin6dfk/image/upload/v1776115989/Screenshot_2026-04-14_030248_ssk8fr.png"
                 alt="Logo"
                 className="relative w-9 h-9 rounded-full border-2 border-[var(--bg-elevated)]
                   shadow-[var(--shadow-sm)] group-hover:scale-105 transition-transform duration-300"
@@ -164,7 +250,7 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
                     <div className="absolute top-full left-0 h-3 w-full" />
                     <motion.div {...ddAnim} className={DD}>
                       <Pip />
-                      <DropRow to="/kundli"          icon={<Star size={14} />}  label="Free Kundli"     onClick={requireAuth} />
+                      <DropRow to="/kundli" icon={<Star size={14} />} label="Free Kundli" onClick={requireAuth} />
                       <DropRow to="/kundli-matching" icon={<Heart size={14} />} label="Kundli Matching" onClick={requireAuth} />
                     </motion.div>
                   </>
@@ -173,22 +259,23 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
             </div>
 
             {/* Calculators — CSS-only hover */}
-            <div className="relative group">
+            <div className="relative group" onMouseEnter={() => toggle('calculator')} onMouseLeave={close}>
               <NavLink>
                 Calculators
-                <ChevronDown size={13} className="text-[var(--primary)] transition-transform duration-300 group-hover:rotate-180" />
+                <ChevronDown size={13} className={`text-[var(--primary)] transition-transform duration-300
+                  ${openDropdown === 'calculator' ? 'rotate-180' : ''}`} />
               </NavLink>
               <div className={`${DD}
                 opacity-0 invisible pointer-events-none scale-[0.97] translate-y-2
                 group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto
                 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-200`}>
                 <Pip />
-                <DropRow to="/love-calculator" icon={<span>💖</span>} label="Love Calculator" sub="Find your match %"       onClick={requireAuth} />
-                <DropRow to="/moon-sign"        icon={<span>🌙</span>} label="Moon Sign"        sub="Discover your lunar sign" onClick={requireAuth} />
+                <DropRow to="/love-calculator" icon={<span>💖</span>} label="Love Calculator" sub="Find your match %" onClick={requireAuth} />
+                <DropRow to="/moon-sign" icon={<span>🌙</span>} label="Moon Sign" sub="Discover your lunar sign" onClick={requireAuth} />
               </div>
             </div>
 
-           
+
 
             {/* Contact */}
             <div className="relative" onMouseEnter={() => toggle('contact')} onMouseLeave={close}>
@@ -203,9 +290,9 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
                     <div className="absolute top-full left-0 h-3 w-full" />
                     <motion.div {...ddAnim} className={DD}>
                       <Pip />
-                      <DropRow to="/chat"    icon={<MessageCircle size={14} />} label="Chat with Expert" onClick={requireAuth} />
-                      <DropRow to="/call"    icon={<Phone size={14} />}         label="Talk to Expert"   onClick={requireAuth} />
-                      <DropRow to="/contact" icon={<Heart size={14} />}         label="Contact Us" />
+                      <DropRow to="/chat" icon={<MessageCircle size={14} />} label="Chat with Expert" onClick={requireAuth} />
+                      <DropRow to="/call" icon={<Phone size={14} />} label="Talk to Expert" onClick={requireAuth} />
+                      <DropRow to="/contact" icon={<Heart size={14} />} label="Contact Us" />
                     </motion.div>
                   </>
                 )}
@@ -225,11 +312,11 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
                     <div className="absolute top-full left-0 h-3 w-full" />
                     <motion.div {...ddAnim} className={`${DD} left-auto right-0`}>
                       <Pip right />
-                      <DropRow to="/blog/love"   icon={<span>💖</span>} label="Love & Relationships" sub="Find your soulmate" />
-                      
-                      <DropRow to="/blog/career" icon={<span>💼</span>} label="Career"               sub="Professional guidance" />
+                      <DropRow to="/blog/love" icon={<span>💖</span>} label="Love & Relationships" sub="Find your soulmate" />
 
-                      <DropRow to="/blog" icon={<span>💼</span>} label="Blog"               sub="General Blogs" />
+                      <DropRow to="/blog/career" icon={<span>💼</span>} label="Career" sub="Professional guidance" />
+
+                      <DropRow to="/blog" icon={<span>💼</span>} label="Blog" sub="General Blogs" />
                     </motion.div>
                   </>
                 )}
@@ -285,8 +372,8 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
                           <p className="text-xs text-[var(--text-soft)] truncate">{currentUser.email}</p>
                         </div>
 
-                        <DropRow to="#" icon={<UserIcon size={14} />}   label="Profile"         onClick={(e) => { e.preventDefault(); onProfileClick(); }} />
-                        
+                        <DropRow to="#" icon={<UserIcon size={14} />} label="Profile" onClick={(e) => { e.preventDefault(); onProfileClick(); }} />
+
                         {/* Wallet (button, not link) */}
                         <button
                           onClick={() => { setIsWalletModalOpen(true); close(); }}
@@ -327,15 +414,18 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
                 </div>
               </>
             ) : (
-              <motion.button
-                whileHover={{ scale: 1.04, y: -1 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => openAuth('login')}
-                className="btn-primary flex items-center gap-2 text-[13px] px-5 py-2.5 cursor-pointer"
-              >
-                Get Started
-                <Sparkles size={13} />
-              </motion.button>
+
+              <ShineWrapper>
+                <motion.button
+                  whileHover={{ scale: 1.04, y: -1 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => openAuth('login')}
+                  className="btn-primary flex items-center gap-2 text-[13px] px-5 py-2.5 cursor-pointer"
+                >
+                  Get Started
+                  <Sparkles size={13} />
+                </motion.button>
+              </ShineWrapper>
             )}
 
             {/* Mobile hamburger */}
@@ -350,7 +440,7 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
           </div>
 
         </div>
-      </nav>
+      </motion.nav>
 
       {/* ════════════════════════════
           MOBILE DRAWER
@@ -399,12 +489,12 @@ const Navbar = ({ onProfileClick, onAddExpertClick }) => {
               {/* Nav items */}
               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
                 {[
-                  { to: '/chat',            icon: <MessageCircle size={16} />, label: 'Chat with Expert' },
-                  { to: '/call',            icon: <Phone size={16} />,         label: 'Talk to Expert' },
-                  { to: '/kundli',          icon: <Star size={16} />,          label: 'Free Kundli' },
-                  { to: '/astromall',       icon: <ShoppingBag size={16} />,   label: 'Astromall Shop' },
-                  { to: '/horoscope/daily', icon: <span>🔮</span>,             label: 'Daily Horoscope' },
-                  { to: '/blog/love',       icon: <Heart size={16} />,         label: 'Love Blogs' },
+                  { to: '/chat', icon: <MessageCircle size={16} />, label: 'Chat with Expert' },
+                  { to: '/call', icon: <Phone size={16} />, label: 'Talk to Expert' },
+                  { to: '/kundli', icon: <Star size={16} />, label: 'Free Kundli' },
+                  { to: '/astromall', icon: <ShoppingBag size={16} />, label: 'Astromall Shop' },
+                  { to: '/horoscope/daily', icon: <span>🔮</span>, label: 'Daily Horoscope' },
+                  { to: '/blog/love', icon: <Heart size={16} />, label: 'Love Blogs' },
                 ].map(({ to, icon, label }) => (
                   <Link
                     key={to}

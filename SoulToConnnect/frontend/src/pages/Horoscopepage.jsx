@@ -1,25 +1,49 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Calendar, Heart, Briefcase, Sparkles, ChevronRight, Clock, ArrowRight } from 'lucide-react';
+import {
+  Star,
+  Calendar,
+  Heart,
+  Briefcase,
+  Sparkles,
+  ChevronRight,
+  Clock,
+  ArrowRight,
+
+  // 🔮 Zodiac Icons
+  Flame,
+  Mountain,
+  Users,
+  Droplet,
+  Sun,
+  Leaf,
+  Scale,
+  Bug,
+  ArrowUpRight,
+  Landmark,
+  Waves,
+  Fish
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
+
 
 /* ─── Design System Tokens ─── */
 // All colors from var(--*) only — no hardcoded hex values
 
 /* ─── Data ─── */
 const ZODIAC_SIGNS = [
-  { name: 'Aries',       icon: '♈', dates: 'Mar 21 – Apr 19' },
-  { name: 'Taurus',      icon: '♉', dates: 'Apr 20 – May 20' },
-  { name: 'Gemini',      icon: '♊', dates: 'May 21 – Jun 20' },
-  { name: 'Cancer',      icon: '♋', dates: 'Jun 21 – Jul 22' },
-  { name: 'Leo',         icon: '♌', dates: 'Jul 23 – Aug 22' },
-  { name: 'Virgo',       icon: '♍', dates: 'Aug 23 – Sep 22' },
-  { name: 'Libra',       icon: '♎', dates: 'Sep 23 – Oct 22' },
-  { name: 'Scorpio',     icon: '♏', dates: 'Oct 23 – Nov 21' },
-  { name: 'Sagittarius', icon: '♐', dates: 'Nov 22 – Dec 21' },
-  { name: 'Capricorn',   icon: '♑', dates: 'Dec 22 – Jan 19' },
-  { name: 'Aquarius',    icon: '♒', dates: 'Jan 20 – Feb 18' },
-  { name: 'Pisces',      icon: '♓', dates: 'Feb 19 – Mar 20' },
+  { name: 'Aries',       icon: <Flame size={20} className="text-[var(--primary)]"/>, dates: 'Mar 21 – Apr 19' },
+  { name: 'Taurus',      icon: <Mountain size={20} className="text-[var(--primary)]"/>, dates: 'Apr 20 – May 20' },
+  { name: 'Gemini',      icon: <Users size={20} className="text-[var(--primary)]"/>, dates: 'May 21 – Jun 20' },
+  { name: 'Cancer',      icon: <Droplet size={20} className="text-[var(--primary)]"/>, dates: 'Jun 21 – Jul 22' },
+  { name: 'Leo',         icon: <Sun size={20} className="text-[var(--primary)]"/>, dates: 'Jul 23 – Aug 22' },
+  { name: 'Virgo',       icon: <Leaf size={20} className="text-[var(--primary)]"/>, dates: 'Aug 23 – Sep 22' },
+  { name: 'Libra',       icon: <Scale size={20} className="text-[var(--primary)]"/>, dates: 'Sep 23 – Oct 22' },
+  { name: 'Scorpio',     icon: <Bug size={20} className="text-[var(--primary)]"/>, dates: 'Oct 23 – Nov 21' },
+  { name: 'Sagittarius', icon: <ArrowUpRight size={20} className="text-[var(--primary)]"/>, dates: 'Nov 22 – Dec 21' },
+  { name: 'Capricorn',   icon: <Landmark size={20} className="text-[var(--primary)]"/>, dates: 'Dec 22 – Jan 19' },
+  { name: 'Aquarius',    icon: <Waves size={20} className="text-[var(--primary)]"/>, dates: 'Jan 20 – Feb 18' },
+  { name: 'Pisces',      icon: <Fish size={20} className="text-[var(--primary)]"/>, dates: 'Feb 19 – Mar 20' },
 ];
 
 const PERIODS = ['Daily', 'Weekly', 'Monthly'];
@@ -86,8 +110,8 @@ const SLabel = ({ children }) => (
 function ZodiacStrip({ active, onSelect }) {
   return (
     <div
-      className="w-full overflow-x-auto py-5 px-4"
-      style={{ background: 'var(--bg-elevated)', borderBottom: '1px solid var(--border-soft)' }}
+      className="w-full overflow-x-auto py-1 px-6 mt-10"
+      style={{ background: '#f4f3f1', borderBottom: '1px solid var(--border-soft)' }}
     >
       <div className="flex items-center gap-2 min-w-max mx-auto" style={{ maxWidth: 900 }}>
         {ZODIAC_SIGNS.map((sign) => {
@@ -424,7 +448,7 @@ export default function HoroscopePage() {
       
 
       {/* ── Zodiac Strip ── */}
-      <ZodiacStrip active={activeSign} onSelect={setActiveSign} />
+      <ZodiacStrip active={activeSign} onSelect={setActiveSign}  />
 
       {/* ── Main Content ── */}
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

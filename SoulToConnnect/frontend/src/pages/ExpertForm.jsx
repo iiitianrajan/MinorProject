@@ -6,7 +6,6 @@ import {
   Award, Shield
 } from 'lucide-react';
 
-/* ─── Step config ─── */
 const STEPS = [
   { id: 1, label: 'Your Cosmic Identity',   sub: 'Tell us about the light you bring to the universe. Your identity helps seekers find the right guidance for their journey.' },
   { id: 2, label: 'Define Your Expertise',  sub: 'Your specializations help seekers find the perfect match for their spiritual questions.' },
@@ -25,7 +24,6 @@ const SPECIALTIES = [
 
 const LANGUAGES = ['Hindi', 'English', 'Tamil', 'Telugu', 'Bengali', 'Marathi'];
 
-/* ─── Field label wrapper ─── */
 function Field({ label, children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -40,7 +38,6 @@ function Field({ label, children }) {
   );
 }
 
-/* ─── Styled input with focus ring ─── */
 function StyledInput({ icon, ...props }) {
   const [focused, setFocused] = useState(false);
   return (
@@ -66,7 +63,6 @@ function StyledInput({ icon, ...props }) {
   );
 }
 
-/* ─── Live Preview Card (right panel) ─── */
 function PreviewCard({ data }) {
   return (
     <motion.div layout className="card" style={{
@@ -75,7 +71,6 @@ function PreviewCard({ data }) {
       boxShadow: 'var(--shadow-md)',
       overflow: 'hidden', padding: 0,
     }}>
-      {/* header bar */}
       <div style={{
         padding: '10px 16px', borderBottom: '1px solid var(--border-soft)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -93,7 +88,6 @@ function PreviewCard({ data }) {
       </div>
 
       <div style={{ padding: '24px 20px' }}>
-        {/* Avatar */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
           <motion.div whileHover={{ scale: 1.05 }} style={{
             width: 80, height: 80, borderRadius: '50%',
@@ -111,7 +105,6 @@ function PreviewCard({ data }) {
           </motion.div>
         </div>
 
-        {/* Name & headline */}
         <div style={{ textAlign: 'center', marginBottom: 14 }}>
           <h3 style={{
             fontSize: '1.05rem', fontWeight: 700, letterSpacing: '-0.02em',
@@ -125,7 +118,6 @@ function PreviewCard({ data }) {
           </p>
         </div>
 
-        {/* Specialty pills */}
         {data.specialties.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center', marginBottom: 14 }}>
             {data.specialties.slice(0, 3).map(s => (
@@ -139,7 +131,6 @@ function PreviewCard({ data }) {
           </div>
         )}
 
-        {/* Bio */}
         {data.bio && (
           <p style={{
             fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.6,
@@ -153,7 +144,6 @@ function PreviewCard({ data }) {
 
         <div style={{ height: 1, background: 'var(--border-soft)', marginBottom: 14 }} />
 
-        {/* Rating + Price */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
             <div style={{ display: 'flex', gap: 2, marginBottom: 3 }}>
@@ -183,7 +173,6 @@ function PreviewCard({ data }) {
   );
 }
 
-/* ─── Step progress dots ─── */
 function StepProgress({ current, total }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -206,23 +195,24 @@ function StepProgress({ current, total }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════
-   MAIN COMPONENT
-═══════════════════════════════════════════════════ */
 const ExpertForm = ({ isOpen, isClose }) => {
   const [step, setStep] = useState(1);
   const [dir,  setDir]  = useState(1);
+
+  // ← CHANGE 1: added profileImageFile: null to initial state
   const [formData, setFormData] = useState({
     fullName: '',
     headline: '',
     bio: '',
     profileImage: '',
+    profileImageFile: null,
     specialties: [],
     languages: [],
     experienceYears: '',
     pricePerMinute: '',
     availability: 'full-time',
   });
+
   const fileInputRef = useRef(null);
 
   const handleChange = (e) => {
@@ -244,25 +234,69 @@ const ExpertForm = ({ isOpen, isClose }) => {
       : [...prev.languages, val],
   }));
 
+  // ← CHANGE 2: store actual File object for upload + base64 for preview
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // store File object for FormData upload
+    setFormData(prev => ({ ...prev, profileImageFile: file }));
+
+    // base64 only for live preview in UI
     const reader = new FileReader();
     reader.onload = (ev) => setFormData(prev => ({ ...prev, profileImage: ev.target.result }));
     reader.readAsDataURL(file);
   };
 
+  // ← CHANGE 3: send FormData instead of JSON so multer/cloudinary can receive the image
   const handleSubmit = async () => {
+      if (!formData.pricePerMinute) {
+    alert('Please set your price per minute in Step 3');
+    setStep(3);
+    return;
+  }
+  if (formData.specialties.length === 0) {
+    alert('Please select at least one specialty in Step 2');
+    setStep(2);
+    return;
+  }
     const token = localStorage.getItem('token');
     try {
+      const fd = new FormData();
+
+      fd.append('fullName',        formData.fullName);
+      fd.append('headline',        formData.headline);
+      fd.append('bio',             formData.bio);
+      fd.append('experienceYears', formData.experienceYears);
+      fd.append('pricePerMinute',  formData.pricePerMinute);
+      fd.append('availability',    formData.availability);
+
+      // arrays sent as comma-separated — backend splits them back
+      fd.append('specialties', formData.specialties.join(','));
+      fd.append('languages',   formData.languages.join(','));
+
+      // 'image' matches upload.single('image') in your router
+      if (formData.profileImageFile) {
+        fd.append('image', formData.profileImageFile);
+      }
+
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/astrologer`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(formData),
+        // DO NOT set Content-Type — browser sets it automatically with correct boundary
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
       });
+
       await res.json();
       alert('Astrologer added 🎉');
-      setFormData({ fullName:'', headline:'', bio:'', profileImage:'', specialties:[], languages:[], experienceYears:'', pricePerMinute:'', availability:'full-time' });
+
+      // reset everything including profileImageFile
+      setFormData({
+        fullName: '', headline: '', bio: '',
+        profileImage: '', profileImageFile: null,
+        specialties: [], languages: [],
+        experienceYears: '', pricePerMinute: '', availability: 'full-time',
+      });
       setStep(1);
       isClose();
     } catch (err) {
@@ -280,7 +314,6 @@ const ExpertForm = ({ isOpen, isClose }) => {
     exit:   (d) => ({ opacity: 0, x: d > 0 ? -36 : 36 }),
   };
 
-  /* shared textarea focus handlers */
   const taFocus = (e) => {
     e.currentTarget.style.borderColor = 'rgba(255,98,0,0.45)';
     e.currentTarget.style.boxShadow   = '0 0 0 3px rgba(255,98,0,0.07)';
@@ -294,7 +327,6 @@ const ExpertForm = ({ isOpen, isClose }) => {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* ── Backdrop ── */}
           <motion.div
             className="fixed inset-0 z-[9998]"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -302,7 +334,6 @@ const ExpertForm = ({ isOpen, isClose }) => {
             onClick={isClose}
           />
 
-          {/* ── Modal shell ── */}
           <motion.div
             className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
             style={{ pointerEvents: 'none' }}
@@ -325,7 +356,6 @@ const ExpertForm = ({ isOpen, isClose }) => {
                 position: 'relative',
               }}
             >
-              {/* Ambient blob */}
               <motion.div
                 animate={{ scale:[1,1.2,1], opacity:[0.3,0.6,0.3] }}
                 transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
@@ -349,7 +379,6 @@ const ExpertForm = ({ isOpen, isClose }) => {
 
               <div style={{ position: 'relative', zIndex: 1 }}>
 
-                {/* ── Top bar ── */}
                 <div style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '20px 28px 0',
@@ -394,7 +423,6 @@ const ExpertForm = ({ isOpen, isClose }) => {
                   </motion.button>
                 </div>
 
-                {/* ── 2-column body ── */}
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: '1fr 280px',
@@ -407,7 +435,6 @@ const ExpertForm = ({ isOpen, isClose }) => {
 
                     <StepProgress current={step} total={4} />
 
-                    {/* Step heading */}
                     <div style={{ marginBottom: 28 }}>
                       <h2 style={{
                         fontFamily: "'Poppins', sans-serif",
@@ -422,7 +449,6 @@ const ExpertForm = ({ isOpen, isClose }) => {
                       </p>
                     </div>
 
-                    {/* Animated step content */}
                     <AnimatePresence mode="wait" custom={dir}>
                       <motion.div
                         key={step}
@@ -434,13 +460,12 @@ const ExpertForm = ({ isOpen, isClose }) => {
                         transition={{ duration: 0.26, ease: [0.16,1,0.3,1] }}
                       >
 
-                        {/* ── STEP 1: Identity ── */}
+                        {/* STEP 1 */}
                         {step === 1 && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
                             <Field label="Profile Portrait">
                               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                                {/* Avatar preview */}
                                 <motion.div
                                   whileHover={{ scale: 1.04 }}
                                   onClick={() => fileInputRef.current?.click()}
@@ -478,6 +503,8 @@ const ExpertForm = ({ isOpen, isClose }) => {
                                     Recommended: 800×800px High-res portrait
                                   </p>
                                 </div>
+
+                                {/* hidden file input */}
                                 <input
                                   ref={fileInputRef}
                                   type="file"
@@ -536,7 +563,7 @@ const ExpertForm = ({ isOpen, isClose }) => {
                           </div>
                         )}
 
-                        {/* ── STEP 2: Expertise ── */}
+                        {/* STEP 2 */}
                         {step === 2 && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
@@ -608,7 +635,7 @@ const ExpertForm = ({ isOpen, isClose }) => {
                           </div>
                         )}
 
-                        {/* ── STEP 3: Pricing & Availability ── */}
+                        {/* STEP 3 */}
                         {step === 3 && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                             <Field label="Price per Minute (₹)">
@@ -625,9 +652,9 @@ const ExpertForm = ({ isOpen, isClose }) => {
                             <Field label="Availability">
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                 {[
-                                  { value: 'full-time', label: 'Full Time',      desc: 'Available 8+ hours/day' },
-                                  { value: 'part-time', label: 'Part Time',      desc: 'Available 3–7 hours/day' },
-                                  { value: 'weekends',  label: 'Weekends Only',  desc: 'Available Sat & Sun' },
+                                  { value: 'full-time', label: 'Full Time',     desc: 'Available 8+ hours/day' },
+                                  { value: 'part-time', label: 'Part Time',     desc: 'Available 3–7 hours/day' },
+                                  { value: 'weekends',  label: 'Weekends Only', desc: 'Available Sat & Sun' },
                                 ].map(opt => {
                                   const active = formData.availability === opt.value;
                                   return (
@@ -666,7 +693,7 @@ const ExpertForm = ({ isOpen, isClose }) => {
                           </div>
                         )}
 
-                        {/* ── STEP 4: Review ── */}
+                        {/* STEP 4 */}
                         {step === 4 && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                             {[
@@ -688,7 +715,6 @@ const ExpertForm = ({ isOpen, isClose }) => {
                               </div>
                             ))}
 
-                            {/* Trust badges */}
                             <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                               {[
                                 { icon: Shield, label: 'Verified Profile' },
@@ -710,7 +736,7 @@ const ExpertForm = ({ isOpen, isClose }) => {
                       </motion.div>
                     </AnimatePresence>
 
-                    {/* ── Nav buttons ── */}
+                    {/* Nav buttons */}
                     <div style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                       marginTop: 32, paddingTop: 20, borderTop: '1px solid var(--border-soft)',

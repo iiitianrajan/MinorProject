@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, ChevronDown, MessageSquare } from "lucide-react";
 import panditImg from "./pandit.png";
+import Counter from "./Counter";
+import LiquidWaveText from "../Animation/LiquidWaveText";
+
+import LetterReveal from "../Animation/LetterReveal";
 
 const faqData = [
   {
@@ -34,7 +38,7 @@ const FaqSection = () => {
   };
 
   return (
-    <section className="section" style={{ background: "var(--bg-soft)" }}>
+    <section id="faq" className="section" style={{ background: "var(--bg-soft)" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
 
@@ -54,7 +58,7 @@ const FaqSection = () => {
               style={{
                 background: "var(--accent-bg)",
                 border: "1px solid var(--accent-border)",
-                color: "var(--primary-light)",
+                color: "var(--primary)",
               }}
             >
               <Sparkles size={12} /> Support
@@ -68,7 +72,8 @@ const FaqSection = () => {
                 letterSpacing: "-0.03em",
               }}
             >
-              Frequently Asked
+              <LiquidWaveText text="Frequently Asked"/>
+             
               <br />
               <span
                 style={{
@@ -78,13 +83,16 @@ const FaqSection = () => {
                   backgroundClip: "text",
                 }}
               >
-                Questions
+                  <LiquidWaveText text="Questions"/>
+                
               </span>
             </h2>
 
             <p className="text-base leading-relaxed mb-10 max-w-md" style={{ color: "var(--text-muted)" }}>
+              <LetterReveal text=""/>
               Everything you need to know about astrology readings and services.
               Can't find your answer? Chat with our spiritual guides.
+             
             </p>
 
             {/* FAQ Items */}
@@ -156,7 +164,7 @@ const FaqSection = () => {
                             className="text-sm leading-relaxed px-5 pb-5"
                             style={{ color: "var(--text-muted)" }}
                           >
-                            {item.answer}
+                            <LetterReveal text={item.answer}/>
                           </p>
                         </motion.div>
                       )}
@@ -182,7 +190,8 @@ const FaqSection = () => {
                 <MessageSquare size={15} /> Chat with a Guide
               </a>
               <span className="text-sm" style={{ color: "var(--text-soft)" }}>
-                We typically reply in minutes.
+                <LetterReveal text="We typically reply in minutes."/>
+                
               </span>
             </motion.div>
           </motion.div>
@@ -237,7 +246,7 @@ const FaqSection = () => {
       <span className="text-lg">🙏</span>
       <div>
         <div className="text-xs font-bold leading-tight" style={{ color: "var(--text-heading)" }}>
-          10,000+ Pandits
+          <Counter to={10000}/>+ Pandits
         </div>
         <div className="text-[11px]" style={{ color: "var(--text-soft)" }}>
           Verified & Trusted

@@ -128,7 +128,8 @@ function AstroCard({ astro, onCardClick, onChatClick }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <h3 className="font-bold text-sm leading-tight truncate text-[var(--text-heading)]">
-              {astro.userId?.name || 'Astrologer'}
+              {astro.
+fullName || astro.userId?.name}
             </h3>
             <motion.div
               whileHover={{ scale: 1.08 }}
@@ -155,7 +156,7 @@ function AstroCard({ astro, onCardClick, onChatClick }) {
               <span className="text-[11px] font-medium ml-0.5 text-[var(--text-soft)]">/min</span>
             </div>
             <MagneticBtn
-              onClick={(e) => onChatClick(e, astro.userId?.name)}
+              onClick={(e) => onChatClick(e, astro.fullName)}
               className="btn-primary flex items-center gap-1.5 px-4 py-1.5 text-xs cursor-pointer"
             >
               <Zap size={11} className="flex-shrink-0" />

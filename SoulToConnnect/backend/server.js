@@ -10,7 +10,7 @@ const server = http.createServer(app);
 // ✅ CORS FIX
 const allowedOrigins = [
   "https://minorproject-frontend.onrender.com",
-  "http://localhost:5177"
+  "http://localhost:5173"
 ];
 
 
@@ -44,6 +44,8 @@ const aiRoutes = require('./routes/ai');
 const reviewRoutes = require("./routes/reviewRoutes");
 const pujaRoutes = require('./routes/pujaRoutes.js')
 const paymentRoutes = require('./routes/paymentRoutes.js')
+// const bookingRoutes = require("./routes");
+const bookingRoutes = require('./routes/bookingRoutes.js')
 
 
 app.use('/api/auth', authRoutes);
@@ -55,6 +57,7 @@ app.use('/api/contact',contactRoutes);
 app.use('/api/review',reviewRoutes);
 app.use('/api/puja',pujaRoutes);
 app.use('/api/payment',paymentRoutes)
+app.use('/api/bookings', bookingRoutes);
 
 
 app.get("/", (req, res) => {
@@ -63,11 +66,11 @@ app.get("/", (req, res) => {
 
 
 // Socket
-const io = initSocketIO(server);
-app.set('io', io);
+// const io = initSocketIO(server);
+// app.set('io', io);
 
 // Server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });

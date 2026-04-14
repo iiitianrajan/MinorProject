@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles, Upload, X, Calendar, Clock, DollarSign,
   Tag, User, FileText, CheckCircle, Image,
-  Plus, Trash2, AlertCircle, Zap,
+  Plus, Trash2, AlertCircle, Zap, MapPin,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -264,9 +264,10 @@ function SlotRow({ slot, onChange, onRemove }) {
 
 
 export default function AddPuja() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-  const [pandits, setPandits] = useState([]);
+  /* ── Pandits (users with role=pandit) ── */
+  const [pandits, setPandits]               = useState([]);
   const [panditsLoading, setPanditsLoading] = useState(true);
 
   useEffect(() => {
@@ -278,7 +279,6 @@ export default function AddPuja() {
         });
         if (res.ok) {
           const data = await res.json();
-          // Handle both shapes: plain array OR { data: [...] }
           setPandits(Array.isArray(data) ? data : (data.data ?? []));
         }
       } catch (err) {
@@ -290,16 +290,26 @@ export default function AddPuja() {
     load();
   }, []);
 
+  /* ── Form state ──
+     Location fields are sent as flat FormData keys to match the controller:
+       locationCity, locationState, locationAddress, locationLat, locationLng
+  ── */
   const [formData, setFormData] = useState({
-    name:           '',
-    description:    '',
-    category:       'PROSPERITY',
-    pandit:         '',   // holds a real MongoDB _id once user selects
-    price:          '',
-    duration:       '60',
-    isActive:       true,
-    includes:       [],
-    availableSlots: [],
+    name:            '',
+    description:     '',
+    category:        'PROSPERITY',
+    pandit:          '',   // MongoDB ObjectId string — empty = unassigned
+    price:           '',
+    duration:        '60',
+    isActive:        true,
+    includes:        [],
+    availableSlots:  [],
+    // location sub-fields (flat, matching controller expectations)
+    locationCity:    '',
+    locationState:   '',
+    locationAddress: '',
+    locationLat:     '',
+    locationLng:     '',
   });
 
   const [imageFile,    setImageFile]    = useState(null);
@@ -312,16 +322,22 @@ export default function AddPuja() {
 
   const fileInputRef = useRef(null);
 
+  /* ── Redirect on success ── */
+  useEffect(() => {
+    if (submitted) navigate('/pooja');
+  }, [submitted, navigate]);
+
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
+  /* ── Image helpers ── */
   const handleFileSelect = file => {
     setImageError('');
     if (!file) return;
-    if (!file.type.startsWith('image/')) { setImageError('Please select a valid image (JPG, PNG, WEBP).'); return; }
-    if (file.size > 10 * 1024 * 1024)   { setImageError('File size must be under 10 MB.'); return; }
+    if (!file.type.startsWith('image/'))  { setImageError('Please select a valid image (JPG, PNG, WEBP).'); return; }
+    if (file.size > 10 * 1024 * 1024)    { setImageError('File size must be under 10 MB.'); return; }
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
@@ -335,55 +351,89 @@ export default function AddPuja() {
 
   const handleDrop = e => { e.preventDefault(); setDragOver(false); handleFileSelect(e.dataTransfer.files[0]); };
 
+  /* ── Slot helpers ── */
   const addSlot    = ()           => setFormData(p => ({ ...p, availableSlots: [...p.availableSlots, { datetime: '', isBooked: false, id: Date.now() }] }));
   const updateSlot = (i, updated) => setFormData(p => ({ ...p, availableSlots: p.availableSlots.map((s, idx) => idx === i ? updated : s) }));
   const removeSlot = i            => setFormData(p => ({ ...p, availableSlots: p.availableSlots.filter((_, idx) => idx !== i) }));
 
+  /* ── Submit ──
+     Builds multipart/form-data exactly as the controller expects:
+       • Flat scalar fields appended individually
+       • pandit omitted when empty (avoids MongoDB ObjectId CastError)
+       • includes / availableSlots as JSON strings
+       • availableSlots mapped to { date (ISO), startTime (hh:mm AM/PM), isBooked }
+       • Location as flat locationCity / locationState / locationAddress / locationLat / locationLng
+       • image as the raw File object under the key 'image' (multer field name)
+  ── */
   const handleSubmit = async () => {
     setSubmitError('');
+
+    // Client-side validation
     if (!formData.name.trim())        return setSubmitError('Puja name is required.');
     if (!formData.description.trim()) return setSubmitError('Description is required.');
     if (!formData.price)              return setSubmitError('Price is required.');
+    if (Number(formData.price) < 0)   return setSubmitError('Price cannot be negative.');
+    if (Number(formData.duration) < 1) return setSubmitError('Duration must be at least 1 minute.');
 
     setSubmitting(true);
     try {
       const token = localStorage.getItem('token');
-      const fd = new FormData();
+      const fd    = new FormData();
 
+      /* ── Core fields ── */
       fd.append('name',        formData.name.trim());
       fd.append('description', formData.description.trim());
-      fd.append('category',    formData.category);
+      fd.append('category',    formData.category);            // must be one of the enum values
       fd.append('price',       formData.price);
       fd.append('duration',    formData.duration);
-      fd.append('isActive',    String(formData.isActive));
+      fd.append('isActive',    String(formData.isActive));    // controller checks === 'true'
 
-      // ✅ Only append pandit when a real ObjectId is selected
-      // Empty string → MongoDB ObjectId CastError
+      /* ── Pandit: only append when a real ObjectId is selected ── */
       if (formData.pandit) fd.append('pandit', formData.pandit);
 
-      fd.append('includes',       JSON.stringify(formData.includes));
-      fd.append('availableSlots', JSON.stringify(
-        formData.availableSlots
-          .filter(s => s.datetime)
-          .map(s => ({
-            date:      new Date(s.datetime).toISOString(),
-            startTime: new Date(s.datetime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-            isBooked:  s.isBooked,
-          }))
-      ));
+      /* ── Includes ── */
+      fd.append('includes', JSON.stringify(formData.includes));
 
+      /* ── Available slots
+           Model schema: { date: Date, startTime: String, isBooked: Boolean }
+           Controller parses JSON string from FormData
+      ── */
+      const slots = formData.availableSlots
+        .filter(s => s.datetime)   // skip empty rows
+        .map(s => {
+          const dt = new Date(s.datetime);
+          return {
+            date:      dt.toISOString(),
+            startTime: dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            isBooked:  s.isBooked,
+          };
+        });
+      fd.append('availableSlots', JSON.stringify(slots));
+
+      /* ── Location: flat keys that the controller destructures from req.body ── */
+      if (formData.locationCity.trim())    fd.append('locationCity',    formData.locationCity.trim());
+      if (formData.locationState.trim())   fd.append('locationState',   formData.locationState.trim());
+      if (formData.locationAddress.trim()) fd.append('locationAddress', formData.locationAddress.trim());
+      if (formData.locationLat && formData.locationLng) {
+        fd.append('locationLat', formData.locationLat);
+        fd.append('locationLng', formData.locationLng);
+      }
+
+      /* ── Image: multer expects field name 'image' ── */
       if (imageFile) fd.append('image', imageFile);
 
-   
+      /* ── POST /api/pujas (matches router.post('/')) ── */
       const res = await fetch(`${API_BASE}/api/puja`, {
         method:  'POST',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body:    fd,
+        // ⚠️  Do NOT set Content-Type — browser sets it with the correct multipart boundary
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to create puja');
-      setSubmitted(true);
+
+      setSubmitted(true);   // triggers useEffect → navigate('/pooja')
     } catch (err) {
       console.error('createPuja error:', err);
       setSubmitError(err.message || 'Something went wrong. Please try again.');
@@ -393,12 +443,17 @@ export default function AddPuja() {
   };
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', category: 'PROSPERITY', pandit: '', price: '', duration: '60', isActive: true, includes: [], availableSlots: [] });
+    setFormData({
+      name: '', description: '', category: 'PROSPERITY', pandit: '',
+      price: '', duration: '60', isActive: true, includes: [], availableSlots: [],
+      locationCity: '', locationState: '', locationAddress: '', locationLat: '', locationLng: '',
+    });
     removeImage();
     setSubmitError('');
     setSubmitted(false);
   };
 
+  /* ── Sidebar helpers ── */
   const complexity = () => {
     const d = parseInt(formData.duration) || 0;
     if (d <= 30) return 'Simple';
@@ -406,16 +461,20 @@ export default function AddPuja() {
     return 'Complex';
   };
 
-  const selectedPanditName = pandits.find(p => p._id === formData.pandit)?.fullName
-                          ?? pandits.find(p => p._id === formData.pandit)?.name
-                          ?? 'Unassigned';
+  const selectedPanditName =
+    pandits.find(p => p._id === formData.pandit)?.fullName ??
+    pandits.find(p => p._id === formData.pandit)?.name ??
+    'Unassigned';
 
-  /* ════════════════════ SUCCESS ════════════════════ */
-{submitted && navigate('/pooja')}
+  const hasLocation = formData.locationCity || formData.locationState || formData.locationAddress;
 
-  /* ════════════════════ FORM ════════════════════ */
+  /* ════════════════════════════════════
+     RENDER
+  ════════════════════════════════════ */
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', position: 'relative', overflow: 'hidden' }}>
+
+      {/* Ambient glows */}
       <motion.div animate={{ scale: [1,1.2,1], opacity: [0.3,0.6,0.3] }} transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
         style={{ position: 'fixed', top: -80, right: -80, width: 380, height: 380, borderRadius: '50%', pointerEvents: 'none', zIndex: 0, background: 'radial-gradient(circle, rgba(255,98,0,0.09) 0%, transparent 65%)', filter: 'blur(60px)' }}
       />
@@ -425,6 +484,7 @@ export default function AddPuja() {
 
       <div style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto', padding: 'clamp(24px, 5vw, 48px) clamp(16px, 4vw, 32px)' }}>
 
+        {/* ── Page header ── */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: [0.16,1,0.3,1] }} style={{ marginBottom: 36 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', padding: '5px 12px', borderRadius: 9999, background: 'var(--accent-bg)', color: 'var(--primary)', border: '1px solid var(--accent-border)', marginBottom: 14 }}>
             <Sparkles size={10} /> Ritual Management
@@ -439,9 +499,10 @@ export default function AddPuja() {
 
         <div className="puja-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 280px', gap: 24, alignItems: 'start' }}>
 
-          {/* ══ LEFT ══ */}
+          {/* ══════════════ LEFT COLUMN ══════════════ */}
           <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.1, ease: [0.16,1,0.3,1] }} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
+            {/* ─── Basic Information ─── */}
             <div className="card" style={{ padding: '28px' }}>
               <SectionHeader icon={<FileText size={14} color="#fff" />} title="Basic Information" gradient />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -457,10 +518,10 @@ export default function AddPuja() {
                       {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </StyledSelect>
                   </Field>
-                  {/* ✅ Pandits from real DB — option values are genuine MongoDB ObjectIds */}
+                  {/* Pandit option values are genuine MongoDB ObjectIds from /api/astrologer */}
                   <Field label="Assigned Pandit">
                     <StyledSelect icon={<User size={14} />} name="pandit" value={formData.pandit} onChange={handleChange}>
-                      <option value="">{panditsLoading ? 'Loading…' : 'Select Pandit'}</option>
+                      <option value="">{panditsLoading ? 'Loading…' : 'Select Pandit (optional)'}</option>
                       {pandits.map(p => (
                         <option key={p._id} value={p._id}>
                           {p.fullName || p.name}
@@ -472,18 +533,19 @@ export default function AddPuja() {
               </div>
             </div>
 
+            {/* ─── Ritual Parameters ─── */}
             <div className="card" style={{ padding: '28px' }}>
               <SectionHeader icon={<Zap size={14} style={{ color: 'var(--primary)' }} />} title="Ritual Parameters" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
                   <Field label="Energy Exchange (Price ₹)">
-                    <StyledInput icon={<DollarSign size={14} />} name="price" type="number" placeholder="0.00" value={formData.price} onChange={handleChange} />
+                    <StyledInput icon={<DollarSign size={14} />} name="price" type="number" min="0" placeholder="0.00" value={formData.price} onChange={handleChange} />
                   </Field>
                   <Field label="Temporal Flow (Minutes)">
-                    <StyledInput icon={<Clock size={14} />} name="duration" type="number" placeholder="60" value={formData.duration} onChange={handleChange} />
+                    <StyledInput icon={<Clock size={14} />} name="duration" type="number" min="1" placeholder="60" value={formData.duration} onChange={handleChange} />
                   </Field>
                 </div>
-                <Field label="Sacred Inclusions (Tags)" hint="Type an item and press Enter">
+                <Field label="Sacred Inclusions (Tags)" hint="Type an item and press Enter or click +">
                   <TagInput
                     tags={formData.includes}
                     onAdd={tag    => setFormData(p => ({ ...p, includes: [...p.includes, tag] }))}
@@ -503,6 +565,67 @@ export default function AddPuja() {
               </div>
             </div>
 
+            {/* ─── Location (NEW — maps to location schema via flat FormData keys) ─── */}
+            <div className="card" style={{ padding: '28px' }}>
+              <SectionHeader icon={<MapPin size={14} style={{ color: 'var(--primary)' }} />} title="Ritual Location" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <Field label="City">
+                    <StyledInput
+                      icon={<MapPin size={14} />}
+                      name="locationCity"
+                      placeholder="e.g. Mumbai"
+                      value={formData.locationCity}
+                      onChange={handleChange}
+                    />
+                  </Field>
+                  <Field label="State">
+                    <StyledInput
+                      icon={<MapPin size={14} />}
+                      name="locationState"
+                      placeholder="e.g. Maharashtra"
+                      value={formData.locationState}
+                      onChange={handleChange}
+                    />
+                  </Field>
+                </div>
+                <Field label="Address" hint="Optional — full venue address">
+                  <TextArea
+                    name="locationAddress"
+                    placeholder="e.g. 12, Temple Road, Andheri West"
+                    value={formData.locationAddress}
+                    onChange={handleChange}
+                    rows={2}
+                  />
+                </Field>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <Field label="Latitude" hint="Optional — for map pin">
+                    <StyledInput
+                      icon={<MapPin size={14} />}
+                      name="locationLat"
+                      type="number"
+                      step="any"
+                      placeholder="19.0760"
+                      value={formData.locationLat}
+                      onChange={handleChange}
+                    />
+                  </Field>
+                  <Field label="Longitude" hint="Optional — for map pin">
+                    <StyledInput
+                      icon={<MapPin size={14} />}
+                      name="locationLng"
+                      type="number"
+                      step="any"
+                      placeholder="72.8777"
+                      value={formData.locationLng}
+                      onChange={handleChange}
+                    />
+                  </Field>
+                </div>
+              </div>
+            </div>
+
+            {/* ─── Auspicious Slots ─── */}
             <div className="card" style={{ padding: '28px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, paddingBottom: 18, borderBottom: '1px solid var(--border-soft)' }}>
                 <SectionHeader icon={<Calendar size={14} style={{ color: 'var(--primary)' }} />} title="Auspicious Slots" noMargin />
@@ -530,9 +653,10 @@ export default function AddPuja() {
 
           </motion.div>
 
-          {/* ══ RIGHT ══ */}
+          {/* ══════════════ RIGHT COLUMN ══════════════ */}
           <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.2, ease: [0.16,1,0.3,1] }} style={{ display: 'flex', flexDirection: 'column', gap: 20, position: 'sticky', top: 24 }}>
 
+            {/* ─── Image upload ─── */}
             <div className="card" style={{ padding: '24px' }}>
               <p style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-soft)', marginBottom: 14 }}>
                 Celestial Visual
@@ -584,6 +708,7 @@ export default function AddPuja() {
               )}
             </div>
 
+            {/* ─── Summary + Submit ─── */}
             <div className="card" style={{ padding: '24px' }}>
               <p style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--primary)', marginBottom: 14 }}>
                 Final Submission
@@ -594,12 +719,14 @@ export default function AddPuja() {
                 { label: 'Visibility', value: formData.isActive ? 'Active' : 'Draft' },
                 { label: 'Image',      value: imageFile ? '✓ Ready' : 'None' },
                 { label: 'Slots',      value: formData.availableSlots.length > 0 ? `${formData.availableSlots.length} added` : 'None' },
+                { label: 'Location',   value: hasLocation ? `${formData.locationCity || '—'}` : 'Not set' },
               ].map(({ label, value }) => (
                 <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-soft)', fontWeight: 600 }}>{label}</span>
                   <span style={{ fontSize: '0.82rem', fontWeight: 700, color: value === '✓ Ready' ? 'var(--primary)' : 'var(--text-heading)' }}>{value}</span>
                 </div>
               ))}
+
               <AnimatePresence>
                 {submitError && (
                   <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -610,7 +737,9 @@ export default function AddPuja() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
               <div style={{ height: 1, background: 'var(--border-soft)', margin: '14px 0' }} />
+
               <motion.button
                 whileHover={{ scale: 1.03, y: -2, boxShadow: '0 0 28px rgba(255,98,0,0.28)' }}
                 whileTap={{ scale: 0.97 }}
@@ -637,6 +766,7 @@ export default function AddPuja() {
                   <><Sparkles size={14} /> Finalize Manifestation</>
                 )}
               </motion.button>
+
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={resetForm}
                 style={{ width: '100%', marginTop: 8, padding: '9px', borderRadius: 9999, background: 'transparent', border: '1px solid var(--border-soft)', color: 'var(--text-muted)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}
               >
@@ -644,6 +774,7 @@ export default function AddPuja() {
               </motion.button>
             </div>
 
+            {/* ─── Tip card ─── */}
             <motion.div whileHover={{ y: -3 }} style={{ padding: '14px 16px', borderRadius: '0.85rem', background: 'var(--accent-bg)', border: '1px solid var(--accent-border)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <Sparkles size={13} style={{ color: 'var(--primary)', marginTop: 2, flexShrink: 0 }} />
               <div>

@@ -407,7 +407,7 @@ const Astromall = () => {
     <motion.div variants={pageVariant} initial="hidden" animate="visible" className="overflow-x-hidden">
 
       {/* ═══════════════ HERO ═══════════════ */}
-      <section className="relative pt-20 pb-10 overflow-hidden" style={{ background: 'var(--bg-soft)' }}>
+      <section className="relative pt-10 pb-10 overflow-hidden" style={{ background: 'var(--bg-soft)' }}>
         <motion.div
           animate={{ scale: [1, 1.18, 1], opacity: [0.5, 0.9, 0.5] }}
           transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}

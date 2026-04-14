@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import { X } from 'lucide-react';
+import { User, X } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { Sparkle } from 'lucide-react';
 
 /* ─── FIELD COMPONENT ─── */
 const Field = ({ label, children, half }) => (
@@ -201,6 +202,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                 maxWidth: 460,
                 maxHeight: '92vh',
                 overflowY: 'auto',
+                overflowX: 'hidden',
                 borderRadius: '2rem',
                 /* Glass card identical to Aetheria reference */
                 background: 'rgba(255,255,255,0.48)',
@@ -217,7 +219,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
               <style>{`div::-webkit-scrollbar { display: none; }`}</style>
 
               {/* ── TOP GRADIENT BAR ── */}
-              <div
+              {/* <div
                 style={{
                   position: 'absolute',
                   top: 0, left: 0, right: 0,
@@ -225,7 +227,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                   background: 'var(--gradient-primary)',
                   borderRadius: '2rem 2rem 0 0',
                 }}
-              />
+              /> */}
 
               {/* ── AMBIENT GLOW ── */}
               <div
@@ -282,9 +284,13 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                   initial={{ scale: 0.7, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.1, type: 'spring', stiffness: 260 }}
-                  style={{ fontSize: '2rem', marginBottom: '0.4rem', lineHeight: 1 }}
+                  style={{ fontSize: '2rem', marginBottom: '0.4rem', lineHeight: 1 ,display:'flex',
+                    justifyContent:'center'
+                  }}
+                  
                 >
-                  🕉️
+                  
+                  {/* <User className='text-[var(--primary)]'/> */}
                 </motion.div>
                 <h1
                   style={{
@@ -398,7 +404,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                       <InputField
                         type="text"
                         name="phone"
-                        placeholder="e.g. 9876543210"
+                        placeholder="+919876543210"
                         onChange={handleChange}
                       />
                     </Field>
@@ -407,7 +413,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                       <InputField
                         type="email"
                         name="email"
-                        placeholder="oracle@divya.com"
+                        placeholder="astro@gmail.com"
                         onChange={handleChange}
                       />
                     </Field>
@@ -479,9 +485,9 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'login' }) => {
                         <Field label="Essence" half>
                           <SelectField name="gender" onChange={handleChange}>
                             <option value="">Select</option>
-                            <option value="male">Solar ☀️</option>
-                            <option value="female">Lunar 🌙</option>
-                            <option value="other">Astral ✨</option>
+                            <option value="male">Solar </option>
+                            <option value="female">Lunar </option>
+                            <option value="other">Astral </option>
                           </SelectField>
                         </Field>
 

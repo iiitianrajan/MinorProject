@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { Flame, Sparkles, Baby, Music, Flower, Heart, Star, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import LetterReveal from "../Animation/LetterReveal";
+import ProximityText from "../Animation/ProximityText";
 
 const services = [
   { id: "general-puja",   title: "General Puja",      desc: "Traditional Hindu rituals to honor deities and seek divine blessings.",                    icon: Sparkles },
@@ -18,7 +20,7 @@ export default function ServicesSection() {
 
   return (
     <section className="section" style={{ background: "var(--bg)" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2">
 
         {/* ── Heading ── */}
         <motion.div
@@ -36,7 +38,7 @@ export default function ServicesSection() {
             style={{
               background: "var(--accent-bg)",
               border: "1px solid var(--accent-border)",
-              color: "var(--primary-light)",
+              color: "var(--primary)",
             }}
           >
             <Sparkles size={12} /> Our Services
@@ -64,8 +66,10 @@ export default function ServicesSection() {
             className="text-base max-w-xl mx-auto leading-relaxed"
             style={{ color: "var(--text-muted)" }}
           >
-            Choose from a wide range of authentic Vedic rituals performed by verified,
-            experienced pandits — right at your home.
+           
+            <LetterReveal text="Choose from a wide range of authentic Vedic rituals performed by verified,
+            experienced pandits — right at your home."/>
+            
           </p>
         </motion.div>
 
@@ -74,7 +78,7 @@ export default function ServicesSection() {
           {services.map((item, i) => (
             <motion.div
               key={item.id}
-              onClick={() => navigate(`/service/${item.id}`)}
+              onClick={() => navigate(`/pooja`)}
               initial={{ opacity: 0, y: 44, scale: 0.93 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
@@ -108,7 +112,7 @@ export default function ServicesSection() {
                   border: "1px solid var(--accent-border)",
                 }}
               >
-                <item.icon size={24} style={{ color: "var(--primary-light)" }} />
+                <item.icon size={24} style={{ color: "var(--primary)" }} />
               </motion.div>
 
               {/* Title */}
@@ -124,14 +128,15 @@ export default function ServicesSection() {
                 className="text-sm leading-relaxed mb-4 relative z-10"
                 style={{ color: "var(--text-muted)" }}
               >
-                {item.desc}
+                <ProximityText text={item.desc}/>
+                
               </p>
 
               {/* Explore arrow — identical to Home service card CTA */}
               <motion.div
                 whileHover={{ x: 5 }}
-                className="flex items-center gap-1 text-xs font-semibold relative z-10"
-                style={{ color: "var(--primary-light)" }}
+                className="flex items-center gap-1 text-xs font-bold relative z-10"
+                style={{ color: "var(--primary)" }}
               >
                 Book Now <ChevronRight size={13} />
               </motion.div>

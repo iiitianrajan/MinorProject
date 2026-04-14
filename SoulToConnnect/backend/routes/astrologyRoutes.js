@@ -2,46 +2,68 @@ const express = require('express');
 const router = express.Router();
 const Astrologer = require('../models/Astrologer');
 const authMiddleware = require('../middleware/authMiddleware');
+const multer = require("multer");
+const { storage } = require("../config/cloudConfig");
+
+const upload = multer({ storage });
 
 // ✅ CREATE ASTROLOGER (Protected)
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, upload.single('image'), async (req, res) => {
   try {
     const {
-      specialties,
-      languages,
+      fullName,
+      headline,
+      bio,
       experienceYears,
       pricePerMinute,
-      bio,
-      profileImage
+      availability,
+      specialties,
+      languages,
     } = req.body;
+    
 
-    // ✅ userId from token (VERY IMPORTANT)
     const userId = req.user.id;
-    console.log(userId)
+    // console.log('userId:', userId);
+
+    
 
     if (!pricePerMinute) {
       return res.status(400).json({ error: 'pricePerMinute is required' });
     }
 
+    // ← use cloudinary URL from uploaded file, fallback to default avatar
+    const profileImage = req.file?.path || 'https://i.pravatar.cc/150';
+
+    // ← FormData sends arrays as comma-separated strings, so parse them back
+    const parsedSpecialties = typeof specialties === 'string'
+      ? specialties.split(',').map(s => s.trim()).filter(Boolean)
+      : Array.isArray(specialties) ? specialties : [];
+
+    const parsedLanguages = typeof languages === 'string'
+      ? languages.split(',').map(l => l.trim()).filter(Boolean)
+      : Array.isArray(languages) ? languages : [];
+
     const astrologer = new Astrologer({
+      fullName,
       userId,
-      specialties,
-      languages,
+      bio,
+      profileImage,
       experienceYears,
       pricePerMinute,
-      bio,
-      profileImage
+      specialties: parsedSpecialties,
+      languages:   parsedLanguages,
+     
     });
 
     await astrologer.save();
 
     res.status(201).json({
       message: 'Astrologer created successfully',
-      astrologer
+      astrologer,
     });
 
   } catch (error) {
-    console.error("❌ CREATE ERROR:", error);
+    console.error('❌ CREATE ERROR:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -57,13 +79,13 @@ router.get('/', async (req, res) => {
     res.json(astrologers);
 
   } catch (error) {
-    console.error("❌ FETCH ERROR:", error);
+    console.error('❌ FETCH ERROR:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 
-// ✅ GET SINGLE ASTROLOGER
+// ✅ GET SINGLE ASTROLOGER (Public)
 router.get('/:id', async (req, res) => {
   try {
     const astrologer = await Astrologer.findById(req.params.id)
@@ -76,13 +98,14 @@ router.get('/:id', async (req, res) => {
     res.json(astrologer);
 
   } catch (error) {
+    console.error('❌ GET ONE ERROR:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
 
-// ✅ UPDATE ASTROLOGER (Protected)
-router.put('/:id', authMiddleware, async (req, res) => {
+// ✅ UPDATE ASTROLOGER (Protected) — supports image re-upload too
+router.put('/:id', authMiddleware, upload.single('image'), async (req, res) => {
   try {
     const astrologer = await Astrologer.findById(req.params.id);
 
@@ -90,9 +113,22 @@ router.put('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    // 🔒 Only owner can update
+    // 🔒 only owner can update
     if (astrologer.userId.toString() !== req.user.id) {
       return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // if a new image was uploaded, use its cloudinary URL
+    if (req.file?.path) {
+      req.body.profileImage = req.file.path;
+    }
+
+    // parse arrays if they come as comma-separated strings
+    if (typeof req.body.specialties === 'string') {
+      req.body.specialties = req.body.specialties.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    if (typeof req.body.languages === 'string') {
+      req.body.languages = req.body.languages.split(',').map(l => l.trim()).filter(Boolean);
     }
 
     const updated = await Astrologer.findByIdAndUpdate(
@@ -104,6 +140,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
     res.json(updated);
 
   } catch (error) {
+    console.error('❌ UPDATE ERROR:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
@@ -118,7 +155,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
       return res.status(404).json({ error: 'Not found' });
     }
 
-    // 🔒 Only owner can delete
+    // 🔒 only owner can delete
     if (astrologer.userId.toString() !== req.user.id) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
@@ -128,6 +165,7 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     res.json({ message: 'Deleted successfully' });
 
   } catch (error) {
+    console.error('❌ DELETE ERROR:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

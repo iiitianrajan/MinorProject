@@ -84,7 +84,10 @@ const AstrologerDetails = () => {
       })
       .then((data) => {
         setReviews(data);
+        
+
         const total = data.length;
+
         let sum = 0;
         const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
         data.forEach((r) => {
@@ -297,9 +300,9 @@ const AstrologerDetails = () => {
                         key={i}
                         size={14}
                         style={{
-                          color: "#facc15",
+                          color: "#e05500",
                           fill:
-                            i < Math.round(ratingStats.avg) ? "#facc15" : "none",
+                            i < Math.round(ratingStats.avg) ? "#e05500" : "none",
                         }}
                       />
                     ))}
@@ -315,6 +318,7 @@ const AstrologerDetails = () => {
                   </span>
                 </div>
 
+
                 {/* Name */}
                 <h1
                   className="font-black tracking-tight mb-1"
@@ -326,7 +330,7 @@ const AstrologerDetails = () => {
                     color: "var(--text-heading)",
                   }}
                 >
-                  {astro.userId?.name}
+                  {astro.fullName|| astro.userId?.name}
                 </h1>
 
                 {/* Specialization */}
@@ -521,7 +525,7 @@ const AstrologerDetails = () => {
                   whileTap={{ scale: 0.97 }}
                   onClick={() =>
                     currentUser
-                      ? setSelectedAstrologer(astro.userId?.name || "Astrologer")
+                      ? setSelectedAstrologer(astro.fullName || "Astrologer")
                       : setIsModalOpen(true)
                   }
                   className="w-full py-4 rounded-xl text-sm font-bold border-0 cursor-pointer relative z-10"
@@ -532,7 +536,7 @@ const AstrologerDetails = () => {
                     letterSpacing: "0.01em",
                   }}
                 >
-                  Book a Private Session
+                  Chat With {astro.fullName||"me"}
                 </motion.button>
               </motion.div>
             </motion.div>
@@ -550,8 +554,8 @@ const AstrologerDetails = () => {
             className="grid grid-cols-3 gap-5"
           >
             {[
-              { value: "${ratingStats.total}+", label: "Total Reviews", icon: "⭐" },
-              { value: "${astro.experienceYears} Yrs", label: "Of Experience", icon: "🕐" },
+              { value: `${ratingStats.total}+`, label: "Total Reviews", icon: "⭐" },
+              { value: `${astro.experienceYears} Yrs`, label: "Of Experience", icon: "🕐" },
               { value: "98%", label: "Accuracy Rate", icon: "🎯" },
             ].map((s, i) => (
               <motion.div
@@ -724,7 +728,7 @@ const AstrologerDetails = () => {
               style={{ padding: "2.5rem" }}
             >
               <div className="flex items-center gap-2 mb-7">
-                <Star size={18} style={{ color: "#facc15", fill: "#facc15" }} />
+                <Star size={18} style={{ color: "#e05500", fill: "#e05500" }} />
                 <h2
                   className="text-xl font-bold"
                   style={{ color: "var(--text-heading)", fontFamily: "Poppins, sans-serif" }}
@@ -759,8 +763,8 @@ const AstrologerDetails = () => {
                         key={i}
                         size={16}
                         style={{
-                          color: "#facc15",
-                          fill: i < Math.round(ratingStats.avg) ? "#facc15" : "none",
+                          color: "#e05500",
+                          fill: i < Math.round(ratingStats.avg) ? "#e05500" : "none",
                         }}
                       />
                     ))}
@@ -845,8 +849,8 @@ const AstrologerDetails = () => {
                       onClick={() => setRating(s)}
                       style={{
                         cursor: "pointer",
-                        color: s <= rating ? "#facc15" : "var(--bg-high)",
-                        fill: s <= rating ? "#facc15" : "var(--bg-high)",
+                        color: s <= rating ? "#e05500" : "var(--bg-high)",
+                        fill: s <= rating ? "#e05500" : "var(--bg-high)",
                         filter:
                           s <= rating
                             ? "drop-shadow(0 0 6px rgba(250,204,21,0.55))"
@@ -956,7 +960,7 @@ const AstrologerDetails = () => {
                           <Star
                             key={idx}
                             size={12}
-                            style={{ color: "#facc15", fill: "#facc15" }}
+                            style={{ color: "#e05500", fill: "#e05500" }}
                           />
                         ))}
                       </div>
@@ -974,6 +978,7 @@ const AstrologerDetails = () => {
                         className="flex items-center gap-3 pt-4 relative z-10"
                         style={{ borderTop: "1px solid var(--border-soft)" }}
                       >
+                        {console.log(r.userId.profilePicture)}
                         <img
                           src={
                             r.userId.profilePicture ||
@@ -993,6 +998,7 @@ const AstrologerDetails = () => {
                               fontFamily: "Poppins, sans-serif",
                             }}
                           >
+                            
                             {r.userId.name || "Anonymous"}
                           </p>
                           <p

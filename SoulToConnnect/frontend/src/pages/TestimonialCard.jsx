@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Star, Quote, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, Quote, Sparkles, CheckCircle,MessageSquare } from "lucide-react";
+import Counter from "./Counter";
+import WaveText from "../Animation/WaveText";
+import LetterReveal from "../Animation/LetterReveal";
 
 const testimonials = [
   {
@@ -106,7 +109,7 @@ export default function Testimonials() {
             style={{
               background: "var(--accent-bg)",
               border: "1px solid var(--accent-border)",
-              color: "var(--primary-light)",
+              color: "var(--primary)",
             }}
           >
             <Sparkles size={12} /> Trusted by Thousands
@@ -120,7 +123,7 @@ export default function Testimonials() {
               letterSpacing: "-0.03em",
             }}
           >
-            What Our Customers{" "}
+            <WaveText text="What Our Customers" fontSize={32}/> {" "}
             <span
               style={{
                 background: "var(--gradient-primary)",
@@ -129,12 +132,14 @@ export default function Testimonials() {
                 backgroundClip: "text",
               }}
             >
-              Say
+               <WaveText text=" Say" fontSize={32}/>
+             
             </span>
           </h2>
 
           <p className="text-base max-w-xl mx-auto leading-relaxed" style={{ color: "var(--text-muted)" }}>
-            Real stories from real people who found clarity and guidance.
+            <LetterReveal text="Real stories from real people who found clarity and guidance."/>
+            
           </p>
         </motion.div>
 
@@ -269,7 +274,8 @@ export default function Testimonials() {
                       className="text-sm leading-relaxed italic relative z-10"
                       style={{ color: "var(--text-muted)" }}
                     >
-                      "{t.text}"
+                      <LetterReveal text={t.text}/>
+                      
                     </p>
                   </div>
                 </motion.div>
@@ -341,10 +347,10 @@ export default function Testimonials() {
           className="mt-12 flex flex-wrap justify-center gap-4"
         >
           {[
-            { emoji: "⭐", value: "4.9 / 5", label: "Average Rating" },
-            { emoji: "💬", value: "50,000+", label: "Reviews" },
-            { emoji: "🛡️", value: "100%", label: "Verified Experts" },
-          ].map((s, i) => (
+  { emoji: <Star size={21} className="text-[var(--primary)]"/>, value: 4.9, suffix: " / 5", label: "Average Rating" },
+  { emoji: <MessageSquare size={21} className="text-[var(--primary)]"/>, value: 50000, suffix: "+", label: "Reviews" },
+  { emoji: <CheckCircle size={21} className="text-[var(--primary)]"/>, value: 100, suffix: "%", label: "Verified Experts" },
+].map((s, i) => (
             <div
               key={i}
               className="flex items-center gap-2.5 px-5 py-3 rounded-2xl"
@@ -360,7 +366,7 @@ export default function Testimonials() {
                   className="text-sm font-bold leading-tight"
                   style={{ color: "var(--text-heading)", fontFamily: "Poppins, sans-serif" }}
                 >
-                  {s.value}
+                  <Counter to={s.value} />{s.suffix}
                 </div>
                 <div className="text-xs" style={{ color: "var(--text-soft)" }}>
                   {s.label}

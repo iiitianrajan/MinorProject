@@ -9,7 +9,7 @@ import React from 'react';
  */
 const TermsOfUse = () => {
   const sections = [
-    { id: 'acceptance', label: 'Acceptance' },
+    { id: 'acceptance', label: 'Acceptance ' },
     { id: 'sacred-spaces', label: 'Sacred Spaces' },
     { id: 'insights-ip', label: 'Insights IP' },
     { id: 'disclaimers', label: 'Disclaimers' },
